@@ -855,7 +855,7 @@ class Pigeon {
   }
 
   poop() {
-    if (this.poopAmmo <= 0 || this.perchedOn) return;
+    if (this.poopAmmo <= 0) return;
     this.poopAmmo--;
     audio.playPoop();
     
@@ -939,6 +939,15 @@ class Pigeon {
         this.flap();
         touchInput.flap = false; // Consume tap
       }
+
+      // Allow pooping while perched
+      const poopPressed = keys['KeyZ'] || keys['KeyX'] || keys['ShiftLeft'] || keys['ShiftRight'] || touchInput.poop;
+      if (poopPressed && !this.wasPoopPressed) {
+        this.poop();
+      }
+      this.wasPoopPressed = poopPressed;
+      if (touchInput.poop) touchInput.poop = false;
+
       return;
     }
 
