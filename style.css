@@ -963,12 +963,12 @@ body, html {
 
 .ranking-input-group {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   width: 100%;
 }
 
-#player-name-input {
-  flex: 1;
+#player-name-input, #player-comment-input {
   background: rgba(0, 0, 0, 0.5);
   border: 1.5px solid var(--panel-border);
   border-radius: 20px;
@@ -980,9 +980,10 @@ body, html {
   text-align: center;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
 }
 
-#player-name-input:focus {
+#player-name-input:focus, #player-comment-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
 }

@@ -306,14 +306,17 @@ let rankingData = [];
 
 function getInitialRanking() {
   const names = ["HATO", "BIRD", "PECKER", "CROW", "KUSOGE", "DRONE", "FLAP", "SPLAT", "COOP", "PIPI", "GULL", "HAWK", "SPARROW", "EAGLE", "DOVE"];
+  const comments = ["クルックー！", "パンくずおいしい", "都会を支配する", "フン爆弾投下！", "カラスに注意", "最高スコア狙う", "ハトカスタム完了", "ポポポッポ", "電線の上は快適", "クソゲー最高"];
   const list = [];
   let currentScore = 1200;
   for (let i = 1; i <= 100; i++) {
     const name = names[Math.floor(Math.random() * names.length)];
+    const comment = comments[Math.floor(Math.random() * comments.length)];
     list.push({
       name: name,
       score: currentScore,
-      date: `2026/06/08`
+      comment: comment,
+      date: `06/08`
     });
     currentScore -= Math.floor(Math.random() * 10) + 5;
     if (currentScore < 5) currentScore = 5;
@@ -321,23 +324,31 @@ function getInitialRanking() {
   return list;
 }
 
-function loadRanking() {
-  const stored = localStorage.getItem('hato_ranking_data');
-  if (stored) {
-    try {
-      rankingData = JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse ranking data', e);
-      rankingData = getInitialRanking();
-    }
-  } else {
-    rankingData = getInitialRanking();
-    saveRanking();
-  }
-}
-
-function saveRanking() {
-  localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+function loadRanking(callback) {
+  fetch('/api/ranking')
+    .then(response => {
+      if (!response.ok) throw new Error('API response error');
+      return response.json();
+    })
+    .then(data => {
+      rankingData = data;
+      localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+      if (callback) callback(rankingData);
+    })
+    .catch(error => {
+      console.warn('Failed to load ranking from server, using local fallback:', error);
+      const stored = localStorage.getItem('hato_ranking_data');
+      if (stored) {
+        try {
+          rankingData = JSON.parse(stored);
+        } catch (e) {
+          rankingData = getInitialRanking();
+        }
+      } else {
+        rankingData = getInitialRanking();
+      }
+      if (callback) callback(rankingData);
+    });
 }
 
 function checkRankingQualification(playerScore) {
@@ -346,29 +357,57 @@ function checkRankingQualification(playerScore) {
   return playerScore > rankingData[99].score;
 }
 
-function registerRankingScore(name, playerScore) {
-  const dateStr = new Date().toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).replace(/\//g, '/');
-
-  const newEntry = {
+function registerRankingScore(name, playerScore, comment, callback) {
+  const payload = {
     name: name || 'ハト',
     score: playerScore,
-    date: dateStr
+    comment: comment || ''
   };
 
-  rankingData.push(newEntry);
-  rankingData.sort((a, b) => b.score - a.score);
-  if (rankingData.length > 100) {
-    rankingData = rankingData.slice(0, 100);
-  }
-  saveRanking();
+  fetch('/api/ranking', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(response => {
+      if (!response.ok) throw new Error('API response error');
+      return response.json();
+    })
+    .then(data => {
+      rankingData = data.ranking;
+      localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+      if (callback) callback(data.rank);
+    })
+    .catch(error => {
+      console.warn('Failed to submit ranking to server, using local fallback:', error);
+      const dateStr = new Date().toLocaleDateString('ja-JP', {
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\//g, '/');
 
-  // Find position of the new entry to highlight it
-  const newRank = rankingData.findIndex(entry => entry.name === newEntry.name && entry.score === newEntry.score && entry.date === newEntry.date) + 1;
-  return newRank;
+      const newEntry = {
+        name: (name || 'ハト').slice(0, 8),
+        score: playerScore,
+        comment: (comment || '').slice(0, 20),
+        date: dateStr
+      };
+
+      rankingData.push(newEntry);
+      rankingData.sort((a, b) => b.score - a.score);
+      rankingData = rankingData.slice(0, 100);
+      localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+
+      const newRank = rankingData.findIndex(entry => 
+        entry.name === newEntry.name && 
+        entry.score === newEntry.score && 
+        entry.comment === newEntry.comment && 
+        entry.date === newEntry.date
+      ) + 1;
+
+      if (callback) callback(newRank);
+    });
 }
 
 function populateLeaderboard(highlightRank = -1) {
@@ -392,6 +431,7 @@ function populateLeaderboard(highlightRank = -1) {
       <td>${rankDisplay}</td>
       <td>${escapeHTML(entry.name)}</td>
       <td>${entry.score}</td>
+      <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(entry.comment || '')}">${escapeHTML(entry.comment || '')}</td>
       <td>${entry.date}</td>
     `;
     tbody.appendChild(tr);
@@ -2304,18 +2344,20 @@ function triggerGameOver() {
   document.getElementById('final-crumbs').textContent = levelCrumbs;
   document.getElementById('high-score').textContent = gameData.highScore;
 
-  // Check ranking qualification
-  const isQualified = checkRankingQualification(score);
-  const registerBox = document.getElementById('ranking-register-box');
-  if (isQualified) {
-    document.getElementById('player-name-input').value = '';
-    registerBox.classList.remove('hidden');
-  } else {
-    registerBox.classList.add('hidden');
-  }
-
-  // Pre-populate leaderboard lists just in case
-  populateLeaderboard();
+  // Load ranking from server, check qualification and populate leaderboard
+  loadRanking(() => {
+    const isQualified = checkRankingQualification(score);
+    const registerBox = document.getElementById('ranking-register-box');
+    const commentInput = document.getElementById('player-comment-input');
+    if (isQualified) {
+      document.getElementById('player-name-input').value = '';
+      if (commentInput) commentInput.value = '';
+      if (registerBox) registerBox.classList.remove('hidden');
+    } else {
+      if (registerBox) registerBox.classList.add('hidden');
+    }
+    populateLeaderboard();
+  });
 
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('mobile-controls').classList.add('hidden');
@@ -2565,25 +2607,35 @@ function setupUIEvents() {
     btnSubmit.addEventListener('click', () => {
       audio.init();
       const nameInput = document.getElementById('player-name-input');
+      const commentInput = document.getElementById('player-comment-input');
       const playerName = (nameInput ? nameInput.value.trim() : '') || 'ハト';
+      const playerComment = commentInput ? commentInput.value.trim() : '';
+
+      // Disable button during submission to prevent duplicate clicks
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = '送信中...';
 
       // Register the score
-      const rank = registerRankingScore(playerName, score);
+      registerRankingScore(playerName, score, playerComment, (rank) => {
+        // Re-enable button
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = '登録 🏆';
 
-      // Refresh table and highlight player rank
-      populateLeaderboard(rank);
+        // Refresh table and highlight player rank
+        populateLeaderboard(rank);
 
-      // Hide registration panel
-      const registerBox = document.getElementById('ranking-register-box');
-      if (registerBox) registerBox.classList.add('hidden');
+        // Hide registration panel
+        const registerBox = document.getElementById('ranking-register-box');
+        if (registerBox) registerBox.classList.add('hidden');
 
-      // Switch to Leaderboard tab
-      if (tabLeaderboard && tabResults && contentLeaderboard && contentResults) {
-        tabLeaderboard.classList.add('active');
-        tabResults.classList.remove('active');
-        contentLeaderboard.classList.remove('hidden');
-        contentResults.classList.add('hidden');
-      }
+        // Switch to Leaderboard tab
+        if (tabLeaderboard && tabResults && contentLeaderboard && contentResults) {
+          tabLeaderboard.classList.add('active');
+          tabResults.classList.remove('active');
+          contentLeaderboard.classList.remove('hidden');
+          contentResults.classList.add('hidden');
+        }
+      });
     });
   }
 }
