@@ -303,8 +303,7 @@ function saveGameData() {
 }
 
 // Render.comにデプロイしたサーバーのURLをここに設定してください
-// （例: 'https://hato-kusoge-api.onrender.com/api/ranking'）
-const RENDER_API_URL = 'https://hato-kusoge-api.onrender.com/api/ranking';
+const RENDER_API_URL = 'https://hato-kusoge.onrender.com/api/ranking';
 
 const API_URL = (location.hostname.includes('github.io'))
   ? RENDER_API_URL
