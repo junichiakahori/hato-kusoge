@@ -43,10 +43,9 @@ body, html {
 #app-wrapper {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 56.25vw; /* 16:9 ratio */
   max-width: 960px;
   max-height: 540px;
-  aspect-ratio: 16 / 9;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -57,10 +56,15 @@ body, html {
   border: 4px solid #1a1e29;
 }
 
+@media (min-aspect-ratio: 16/9) {
+  #app-wrapper {
+    height: 100vh;
+    width: 177.78vh; /* 16:9 ratio */
+  }
+}
+
 @media (max-width: 960px), (max-height: 540px) {
   #app-wrapper {
-    width: 100%;
-    height: 100%;
     border-radius: 0;
     border: none;
   }
