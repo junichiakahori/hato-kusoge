@@ -1007,6 +1007,7 @@ class Pigeon {
     
     this.poopReloadTimer = 0;
     this.cooingTimer = Math.random() * 200 + 100;
+    this.isDead = false;
   }
 
   reset() {
@@ -1018,6 +1019,7 @@ class Pigeon {
     this.perchedOn = null;
     this.wingAngle = 0;
     this.rotation = 0;
+    this.isDead = false;
     
     this.refreshStats();
     this.stamina = this.maxStamina;
@@ -1062,6 +1064,22 @@ class Pigeon {
   }
 
   update() {
+    if (this.isDead) {
+      this.vy += 0.35; // gravity
+      if (this.vy > 8) this.vy = 8;
+      this.x += this.vx;
+      this.y += this.vy;
+      
+      // Ground collision
+      if (this.y > GAME_HEIGHT - 65 - this.radius) {
+        this.y = GAME_HEIGHT - 65 - this.radius;
+        this.vy = 0;
+        this.vx = 0;
+      }
+      this.rotation += 0.08; // Spin while falling
+      return;
+    }
+
     const skin = SKINS[gameData.activeSkin] || SKINS.normal;
 
     // Bob head and blink animation logic
@@ -1323,14 +1341,28 @@ class Pigeon {
     ctx.fill();
 
     // Eye (orange outer, black inner)
-    ctx.fillStyle = '#ff7675';
-    ctx.beginPath();
-    ctx.arc(13, -14, 2.5, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = '#000000';
-    ctx.beginPath();
-    ctx.arc(13.5, -14, 1.2, 0, Math.PI*2);
-    ctx.fill();
+    if (this.isDead) {
+      // Draw X for dead/knocked out eyes
+      ctx.strokeStyle = '#2d3436';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      // Line 1: \
+      ctx.moveTo(10.5, -16.5);
+      ctx.lineTo(15.5, -11.5);
+      // Line 2: /
+      ctx.moveTo(15.5, -16.5);
+      ctx.lineTo(10.5, -11.5);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#ff7675';
+      ctx.beginPath();
+      ctx.arc(13, -14, 2.5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(13.5, -14, 1.2, 0, Math.PI*2);
+      ctx.fill();
+    }
     
     // Head Bobbing Beak Spot (white cere)
     ctx.fillStyle = '#ffffff';
@@ -2956,10 +2988,18 @@ function updateHUD() {
   }
 }
 
+let gameOverCutsceneTimer = 0;
+
 function triggerGameOver() {
-  if (currentGameState === STATE.GAMEOVER) return;
-  currentGameState = STATE.GAMEOVER;
+  if (currentGameState === STATE.GAMEOVER_CUTSCENE || currentGameState === STATE.GAMEOVER) return;
+  currentGameState = STATE.GAMEOVER_CUTSCENE;
+  gameOverCutsceneTimer = 120; // 2 seconds (120 frames at 60fps)
   
+  pigeon.isDead = true;
+  pigeon.vy = -5.5; // slight bounce
+  pigeon.vx = -1.5; // push back slightly
+  pigeon.perchedOn = null; // Unperch
+
   audio.playGameOver();
 
   // Update total crumbs
@@ -2971,6 +3011,16 @@ function triggerGameOver() {
   }
   
   saveGameData();
+
+  // Hide active UI immediately for cinematic feel
+  const hud = document.getElementById('hud');
+  const mobileCtrl = document.getElementById('mobile-controls');
+  if (hud) hud.classList.add('hidden');
+  if (mobileCtrl) mobileCtrl.classList.add('hidden');
+}
+
+function showGameOverScreen() {
+  currentGameState = STATE.GAMEOVER;
 
   // Reset tab view state to Results tab
   document.getElementById('tab-results').classList.add('active');
@@ -2998,9 +3048,8 @@ function triggerGameOver() {
     populateLeaderboard();
   });
 
-  document.getElementById('hud').classList.add('hidden');
-  document.getElementById('mobile-controls').classList.add('hidden');
-  document.getElementById('game-over-screen').classList.remove('hidden');
+  const gameOverScreen = document.getElementById('game-over-screen');
+  if (gameOverScreen) gameOverScreen.classList.remove('hidden');
 }
 
 // --- SHOP / UPGRADES ACTIONS ---
@@ -3319,20 +3368,28 @@ function gameLoop(timestamp) {
   // Clear Canvas
   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-  if (currentGameState === STATE.PLAYING) {
+  if (currentGameState === STATE.PLAYING || currentGameState === STATE.GAMEOVER_CUTSCENE) {
     // 1. SCROLLING ENVIRONMENT BACKGROUNDS
-    scrollX += gameSpeed;
+    if (currentGameState === STATE.PLAYING) {
+      scrollX += gameSpeed;
+      // Gradually speed up game as score increases
+      gameSpeed = minGameSpeed + Math.min(maxGameSpeed - minGameSpeed, score * 0.0001);
+    } else {
+      // Slow down effect during gameover cutscene
+      gameSpeed *= 0.95;
+      if (gameSpeed < 0.05) gameSpeed = 0;
+      scrollX += gameSpeed;
+    }
     
-    // Gradually speed up game as score increases
-    gameSpeed = minGameSpeed + Math.min(maxGameSpeed - minGameSpeed, score * 0.0001);
-
     // Draw Parallax Layers
     drawSky();
     drawCityscape();
 
     // 2. SPAWN NEW ENTITIES & UPDATE EVENTS
-    updateEventSystem();
-    spawnSystems();
+    if (currentGameState === STATE.PLAYING) {
+      updateEventSystem();
+      spawnSystems();
+    }
 
     // 3. UPDATE ENTITIES
     // Update Wires (fixed levels, just render)
@@ -3502,6 +3559,47 @@ function gameLoop(timestamp) {
     
     // Draw virtual touch joystick
     drawJoystick();
+
+    // GAMEOVER_CUTSCENE specific rendering & check
+    if (currentGameState === STATE.GAMEOVER_CUTSCENE) {
+      // 1. Red flashing border vignette
+      const pulse = Math.abs(Math.sin(gameTime * 0.08));
+      ctx.save();
+      ctx.strokeStyle = `rgba(255, 71, 87, ${pulse * 0.7})`;
+      ctx.lineWidth = 14;
+      ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+      ctx.restore();
+
+      // 2. "GAME OVER" Text on Canvas
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 6;
+      
+      ctx.font = '900 42px "M PLUS Rounded 1c", sans-serif';
+      const textY = GAME_HEIGHT / 2 - 80;
+      
+      // Shadow stroke
+      ctx.strokeText('GAME OVER', GAME_WIDTH / 2, textY);
+      // Red fill
+      ctx.fillStyle = '#ff4757';
+      ctx.fillText('GAME OVER', GAME_WIDTH / 2, textY);
+      
+      // Subtext
+      ctx.font = '800 12px "Press Start 2P", monospace';
+      ctx.lineWidth = 3;
+      ctx.strokeText('CRASHED!', GAME_WIDTH / 2, textY + 50);
+      ctx.fillStyle = '#ffa502';
+      ctx.fillText('CRASHED!', GAME_WIDTH / 2, textY + 50);
+      ctx.restore();
+
+      // 3. Countdown timer to transit to the HTML result menu
+      gameOverCutsceneTimer--;
+      if (gameOverCutsceneTimer <= 0) {
+        showGameOverScreen();
+      }
+    }
 
   } else {
     // MENU OR SHOP RENDERING - Draw nice animated background screen on canvas
