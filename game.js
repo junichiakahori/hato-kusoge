@@ -2772,7 +2772,22 @@ function setupUIEvents() {
 }
 
 // --- MAIN GAME LOOP ---
-function gameLoop() {
+let lastTime = 0;
+const fpsInterval = 1000 / 60; // 60 FPS target (~16.67ms per frame)
+
+function gameLoop(timestamp) {
+  if (!timestamp) timestamp = performance.now();
+  
+  requestAnimationFrame(gameLoop);
+  
+  const elapsed = timestamp - lastTime;
+  if (elapsed < fpsInterval) {
+    return; // Skip this frame to maintain 60 FPS
+  }
+  
+  // Adjust lastTime, accounting for interval drift
+  lastTime = timestamp - (elapsed % fpsInterval);
+
   gameTime++;
 
   // Clear Canvas
@@ -2917,8 +2932,6 @@ function gameLoop() {
     drawForegroundCity();
   }
 
-  // Schedule Next Frame
-  requestAnimationFrame(gameLoop);
 }
 
 // --- INIT APP ---
