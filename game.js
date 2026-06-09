@@ -2696,7 +2696,7 @@ function initShopUI() {
           renderSkins();
           audio.playEat(); // Buy sound
         } else {
-          alert('パンくずが足りません！');
+          alert('エサが足りません！');
         }
       }
     });
@@ -2730,7 +2730,7 @@ function initShopUI() {
         renderUpgrades();
         audio.playEat();
       } else {
-        alert('パンくずが足りません！');
+        alert('エサが足りません！');
       }
     });
   });

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ハトの糞ゲー</title>
-  <meta name="description" content="鳩（ハト）になって都会を飛び回り、パンくずを食べ、障害物を避けて、フンを落とす爽快アクションゲーム！">
+  <meta name="description" content="鳩（ハト）になって都会を飛び回り、エサを食べ、障害物を避けて、フンを落とす爽快アクションゲーム！">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
               <span id="hud-score" class="hud-value">00000</span>
             </div>
             <div class="hud-item crumbs-container">
-              <span class="hud-label">CRUMBS</span>
+              <span class="hud-label">FOOD</span>
               <span class="hud-value">🍞 <span id="hud-crumbs">0</span></span>
             </div>
             <button id="btn-audio-toggle" class="hud-btn" aria-label="Toggle Audio">🔊</button>
@@ -90,8 +90,8 @@
 
         <div class="menu-footer">
           <span class="copyright-label">© 2026 <a href="https://x.com/drone_akahori" target="_blank" rel="noopener noreferrer">@drone_akahori</a></span>
-          <span id="footer-version" class="version-label">v1.2.1</span>
-          <span id="footer-date" class="update-label">最終更新: 2026/06/09 19:52</span>
+          <span id="footer-version" class="version-label">v1.2.3</span>
+          <span id="footer-date" class="update-label">最終更新: 2026/06/09 20:41</span>
         </div>
       </div>
 
@@ -99,7 +99,7 @@
       <div id="shop-screen" class="menu-overlay hidden">
         <div class="shop-header">
           <h2>🛒 ハト・ショップ</h2>
-          <div class="shop-crumbs">所持パンくず: 🍞 <span id="shop-crumb-count">0</span></div>
+          <div class="shop-crumbs">所持エサ: 🍞 <span id="shop-crumb-count">0</span></div>
         </div>
 
         <div class="shop-content">
@@ -120,7 +120,7 @@
                 <div class="skin-preview golden-preview">🪙🕊️</div>
                 <div class="skin-info">
                   <span class="skin-name">ゴールデンハト</span>
-                  <span class="skin-desc">パンくず獲得時の得点2倍！</span>
+                  <span class="skin-desc">エサ獲得時の得点2倍！</span>
                 </div>
                 <button class="skin-btn unlock-btn">🍞 50</button>
               </div>
@@ -208,7 +208,7 @@
               <span id="final-score" class="summary-val">0</span>
             </div>
             <div class="summary-row">
-              <span>集めたパンくず:</span>
+              <span>集めたエサ:</span>
               <span id="final-crumbs" class="summary-val">0</span>
             </div>
             <div class="summary-row highscore-row">
@@ -266,6 +266,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=23"></script>
+  <script src="game.js?v=24"></script>
 </body>
 </html>
