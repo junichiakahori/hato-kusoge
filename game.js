@@ -1873,7 +1873,7 @@ class GlowParticle {
 }
 
 class FeatherParticle {
-  constructor(x, y, vx, vy, skinType) {
+  constructor(x, y, vx, vy, skinType, customColor) {
     this.x = x;
     this.y = y;
     this.vx = vx;
@@ -1883,7 +1883,7 @@ class FeatherParticle {
     this.alpha = 1.0;
     this.decay = 0.015 + Math.random() * 0.02;
     this.scale = 0.6 + Math.random() * 0.8;
-    this.color = (SKINS[skinType] || SKINS.normal).colorWing;
+    this.color = customColor || (SKINS[skinType] || SKINS.normal).colorWing;
   }
 
   update() {
@@ -2213,10 +2213,46 @@ function checkCollisions() {
     }
   }
 
-  // 4. Poop bullets hit targets on ground
+  // 4. Poop bullets hit targets on ground / enemies
   for (let i = poopBullets.length - 1; i >= 0; i--) {
     const bullet = poopBullets[i];
     
+    // Check if hitting enemies (crows, cats)
+    let enemyHit = false;
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const enemy = enemies[j];
+      const dx = bullet.x - enemy.x;
+      const dy = bullet.y - enemy.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      
+      if (dist < bullet.radius + enemy.radius) {
+        audio.playSplat();
+        const isCrow = enemy instanceof Crow;
+        const featherColor = isCrow ? '#1e272e' : enemy.color || '#ff7f50';
+        
+        for (let p = 0; p < 8; p++) {
+          particles.push(new FeatherParticle(
+            enemy.x, enemy.y, 
+            (Math.random() - 0.5) * 8, 
+            (Math.random() - 0.5) * 8 - 2, 
+            isCrow ? 'shadow' : 'normal', 
+            featherColor
+          ));
+        }
+
+        const points = isCrow ? 300 : 500;
+        const label = isCrow ? "CROW DOWN! 💥" : "CAT HIT! 💥";
+        particles.push(new TextBubbleParticle(enemy.x, enemy.y, `${label} +${points}`, "#ffd32a", 60));
+        
+        score += points;
+        enemies.splice(j, 1);
+        poopBullets.splice(i, 1);
+        enemyHit = true;
+        break;
+      }
+    }
+    if (enemyHit) continue;
+
     // Bounds check
     if (bullet.y > GAME_HEIGHT - 65) {
       // Hit ground splat!
