@@ -1514,14 +1514,29 @@ class Breadcrumb {
     this.isHeart = this.type === 'heart';
     this.radius = this.isBean ? 9 : (this.isHeart ? 8 : 7);
     this.pulse = Math.random() * Math.PI;
+    if (this.isHeart) {
+      this.life = 480; // 8 seconds at 60 FPS
+    }
   }
 
   update() {
-    this.x -= gameSpeed;
+    if (this.isHeart) {
+      this.x -= gameSpeed * 0.1; // Drift left slowly
+      this.life--;
+    } else {
+      this.x -= gameSpeed;
+    }
     this.pulse += 0.08;
   }
 
   draw() {
+    if (this.isHeart && this.life < 120) {
+      const blinkSpeed = this.life < 60 ? 4 : 8;
+      if (Math.floor(this.life / blinkSpeed) % 2 === 0) {
+        return;
+      }
+    }
+
     ctx.save();
     ctx.translate(this.x, this.y);
     
@@ -2906,7 +2921,7 @@ function gameLoop(timestamp) {
       const item = collectibles[i];
       item.update();
       item.draw();
-      if (item.x < -40) {
+      if (item.x < -40 || (item.isHeart && item.life <= 0)) {
         collectibles.splice(i, 1);
       }
     }
