@@ -2874,9 +2874,27 @@ function gameLoop() {
 }
 
 // --- INIT APP ---
+function loadVersionInfo() {
+  fetch('version.json')
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to load version.json');
+      return response.json();
+    })
+    .then(data => {
+      const versionEl = document.getElementById('footer-version');
+      const dateEl = document.getElementById('footer-date');
+      if (versionEl) versionEl.textContent = data.version;
+      if (dateEl) dateEl.textContent = `最終更新: ${data.lastUpdated}`;
+    })
+    .catch(error => {
+      console.warn('Could not load dynamic version info, using HTML defaults:', error);
+    });
+}
+
 window.addEventListener('load', () => {
   loadGameData();
   loadRanking();
+  loadVersionInfo();
   setupUIEvents();
   setupMobileControls();
   
