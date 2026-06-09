@@ -24,6 +24,10 @@
               <span class="hud-label">SCORE</span>
               <span id="hud-score" class="hud-value">00000</span>
             </div>
+            <div class="hud-item life-container">
+              <span class="hud-label">LIFE</span>
+              <span id="hud-life" class="hud-value">❤️❤️❤️</span>
+            </div>
             <div class="hud-item crumbs-container">
               <span class="hud-label">CRUMBS</span>
               <span class="hud-value">🍞 <span id="hud-crumbs">0</span></span>
@@ -165,6 +169,14 @@
                 </div>
                 <button class="upgrade-btn" data-cost="25">🍞 25</button>
               </div>
+
+              <div class="upgrade-item" data-upgrade="life">
+                <div class="upgrade-info">
+                  <span class="upgrade-name">ライフ最大値 ❤️</span>
+                  <span class="upgrade-desc">被弾ダメージに耐える最大ハート数を増やします (現在Lv.<span id="lvl-life">1</span>/3)</span>
+                </div>
+                <button class="upgrade-btn" data-cost="30">🍞 30</button>
+              </div>
             </div>
           </div>
         </div>
@@ -251,6 +263,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=18"></script>
+  <script src="game.js?v=19"></script>
 </body>
 </html>

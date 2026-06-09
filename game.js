@@ -278,7 +278,8 @@ let gameData = {
   upgrades: {
     stamina: 1, // Max stamina multiplier
     poop: 1,    // Max poop ammo
-    speed: 1    // Max move speed
+    speed: 1,   // Max move speed
+    life: 1     // Max life Hearts
   }
 };
 
@@ -291,6 +292,9 @@ function loadGameData() {
       // Handle backward compatible check for upgraded arrays
       if (!gameData.unlockedSkins.includes('normal')) {
         gameData.unlockedSkins.push('normal');
+      }
+      if (!gameData.upgrades.life) {
+        gameData.upgrades.life = 1;
       }
     } catch (e) {
       console.error('Failed to parse save game data', e);
@@ -790,6 +794,8 @@ class Pigeon {
     this.poopMax = 5;
     this.poopAmmo = 5;
     this.speedMult = 1;
+    this.maxHp = 3;
+    this.hp = 3;
     
     this.wingAngle = 0;
     this.wingDirection = 1;
@@ -819,6 +825,7 @@ class Pigeon {
     this.refreshStats();
     this.stamina = this.maxStamina;
     this.poopAmmo = this.poopMax;
+    this.hp = this.maxHp;
     this.poopReloadTimer = 0;
   }
 
@@ -828,6 +835,7 @@ class Pigeon {
     this.maxStamina = 100 * (1 + (gameData.upgrades.stamina - 1) * 0.15) * skin.staminaMaxMult;
     this.poopMax = (skin.poopCap) + (gameData.upgrades.poop - 1);
     this.speedMult = (1 + (gameData.upgrades.speed - 1) * 0.1) * skin.speedMult;
+    this.maxHp = 2 + (gameData.upgrades.life || 1);
   }
 
   flap() {
@@ -1031,7 +1039,7 @@ class Pigeon {
 
   takeDamage(amount) {
     if (this.hurtTimer > 0) return; // Invincible brief period
-    this.stamina -= amount;
+    this.hp -= 1; // Substract 1 Heart/HP per hit
     this.hurtTimer = 45; // blink frames
     audio.playDamage();
 
@@ -1045,8 +1053,8 @@ class Pigeon {
       ));
     }
 
-    if (this.stamina <= 0) {
-      this.stamina = 0;
+    if (this.hp <= 0) {
+      this.hp = 0;
       triggerGameOver();
     }
   }
@@ -2384,6 +2392,7 @@ function drawJoystick() {
 function updateHUD() {
   const scoreEl = document.getElementById('hud-score');
   const crumbsEl = document.getElementById('hud-crumbs');
+  const lifeEl = document.getElementById('hud-life');
   const staminaFill = document.getElementById('stamina-fill');
   const poopFill = document.getElementById('poop-fill');
   const poopCount = document.getElementById('poop-count');
@@ -2393,6 +2402,18 @@ function updateHUD() {
   }
   if (crumbsEl) {
     crumbsEl.textContent = levelCrumbs;
+  }
+  
+  if (lifeEl) {
+    let hearts = '';
+    for (let i = 0; i < pigeon.maxHp; i++) {
+      if (i < pigeon.hp) {
+        hearts += '❤️';
+      } else {
+        hearts += '🖤';
+      }
+    }
+    lifeEl.innerHTML = hearts;
   }
 
   // Stamina fill %
@@ -2509,6 +2530,22 @@ function initShopUI() {
         btnSpeed.classList.remove('maxed');
       }
     }
+
+    // Max Life Level
+    const lvlLife = document.getElementById('lvl-life');
+    if (lvlLife) lvlLife.textContent = gameData.upgrades.life || 1;
+    const btnLife = document.querySelector('[data-upgrade="life"] .upgrade-btn');
+    if (btnLife) {
+      const level = gameData.upgrades.life || 1;
+      const cost = 30 * level;
+      if (level >= 3) {
+        btnLife.textContent = 'MAX';
+        btnLife.classList.add('maxed');
+      } else {
+        btnLife.textContent = `🍞 ${cost}`;
+        btnLife.classList.remove('maxed');
+      }
+    }
   };
 
   // Render skin cards state (lock, unlock, select)
@@ -2585,14 +2622,16 @@ function initShopUI() {
     newBtn.addEventListener('click', () => {
       audio.init();
       const type = item.getAttribute('data-upgrade');
-      const currentLvl = gameData.upgrades[type];
+      const currentLvl = gameData.upgrades[type] || 1;
       
-      if (currentLvl >= 5) return; // Maxed out
+      const maxLvl = (type === 'life') ? 3 : 5;
+      if (currentLvl >= maxLvl) return; // Maxed out
 
       let cost = 0;
       if (type === 'stamina') cost = 15 * currentLvl;
       if (type === 'poop') cost = 20 * currentLvl;
       if (type === 'speed') cost = 25 * currentLvl;
+      if (type === 'life') cost = 30 * currentLvl;
 
       if (gameData.crumbs >= cost) {
         gameData.crumbs -= cost;
