@@ -2097,32 +2097,39 @@ function resetGamePlay() {
 // --- COLLISION LOGIC ---
 function checkCollisions() {
   // 1. Pigeon perching on wires/landmarks
-  // Only check if falling and pressing W/Up
   const landingKey = keys['ArrowUp'] || keys['KeyW'] || touchInput.up;
-  if (landingKey && !pigeon.perchedOn && pigeon.vy > 0) {
+  if (landingKey && !pigeon.perchedOn) {
     // Check telephone pole tops or lamp heads first
     for (let pole of landmarks) {
       const poleLeft = pole.x;
       const poleRight = pole.x + pole.width;
       const poleTop = pole.y;
       
-      // If pigeon footprint aligns
+      // Check if pigeon was above the pole top before the update
+      const prevFootY = pigeon.y - pigeon.vy + pigeon.radius;
       if (pigeon.x > poleLeft && pigeon.x < poleRight &&
-          Math.abs(pigeon.y + pigeon.radius - poleTop) < 18) {
+          prevFootY <= poleTop + 2 &&
+          Math.abs(pigeon.y + pigeon.radius - poleTop) < 22) {
         pigeon.perchedOn = pole;
         pigeon.vy = 0;
         break;
       }
     }
     
-    // If not perched on pole, check raw wire snapping
+    // If not perched on pole, check raw wire snapping with sag logic
     if (!pigeon.perchedOn) {
       for (let wire of wires) {
-        if (Math.abs(pigeon.y + pigeon.radius - wire.y) < 10) {
+        // Calculate the actual wire Y coordinate accounting for visual sag (quadratic curve)
+        const t = pigeon.x / GAME_WIDTH;
+        const actualWireY = wire.y + 24 * t * (1 - t);
+        
+        const prevFootY = pigeon.y - pigeon.vy + pigeon.radius;
+        if (prevFootY <= actualWireY + 2 &&
+            Math.abs(pigeon.y + pigeon.radius - actualWireY) < 18) {
           // snap to wire
           pigeon.perchedOn = {
             x: pigeon.x - 20,
-            y: wire.y,
+            y: actualWireY,
             width: 40
           };
           pigeon.vy = 0;
