@@ -3305,7 +3305,7 @@ function gameLoop(timestamp) {
       const bannerW = 450;
       const bannerH = 40;
       const bannerX = (GAME_WIDTH - bannerW) / 2;
-      const bannerY = 190;
+      const bannerY = 265;
       
       ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
       ctx.strokeRect(bannerX, bannerY, bannerW, bannerH);
