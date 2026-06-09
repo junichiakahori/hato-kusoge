@@ -310,6 +310,15 @@ const SUPABASE_KEY = 'your-anon-public-key';
 
 const isSupabaseConfigured = SUPABASE_URL !== 'https://your-project-id.supabase.co' && SUPABASE_KEY !== 'your-anon-public-key';
 
+// Automatically sanitize URL in case user copies with trailing slash or '/rest/v1/'
+const SUPABASE_BASE_URL = (() => {
+  let url = SUPABASE_URL.trim();
+  if (url.endsWith('/')) url = url.slice(0, -1);
+  if (url.endsWith('/rest/v1')) url = url.slice(0, -8);
+  if (url.endsWith('/')) url = url.slice(0, -1);
+  return url;
+})();
+
 let rankingData = [];
 
 function getInitialRanking() {
@@ -342,7 +351,7 @@ function loadRanking(callback) {
     return;
   }
 
-  const url = `${SUPABASE_URL}/rest/v1/ranking?select=name,score,comment,created_at&order=score.desc&limit=100`;
+  const url = `${SUPABASE_BASE_URL}/rest/v1/ranking?select=name,score,comment,created_at&order=score.desc&limit=100`;
   fetch(url, {
     method: 'GET',
     headers: {
@@ -417,7 +426,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
     return;
   }
 
-  const url = `${SUPABASE_URL}/rest/v1/ranking`;
+  const url = `${SUPABASE_BASE_URL}/rest/v1/ranking`;
   const payload = {
     name: (name || 'ハト').slice(0, 8),
     score: playerScore,
