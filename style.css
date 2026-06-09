@@ -949,8 +949,9 @@ body, html {
 /* Name registration form */
 #ranking-register-box {
   width: 100%;
-  max-width: 320px;
-  margin-top: 10px;
+  max-width: 300px;
+  margin-top: 14px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -998,10 +999,21 @@ body, html {
 }
 
 #btn-submit-score {
-  padding: 10px 18px;
-  font-size: 12px;
-  border-radius: 20px;
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 25px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.gold-btn {
+  background: linear-gradient(135deg, #ffd32a, #ff9f43);
+  color: #0b0c10;
+  font-weight: 900;
+}
+
+.gold-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 159, 67, 0.5);
 }
 
 /* Leaderboard */
