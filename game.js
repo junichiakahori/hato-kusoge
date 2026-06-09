@@ -3254,30 +3254,34 @@ function gameLoop(timestamp) {
       // Red flashing vignette border
       const pulse = Math.abs(Math.sin(gameTime * 0.1));
       ctx.save();
-      // Explicitly reset text state to prevent leakage from prior draw calls
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
       ctx.strokeStyle = `rgba(255, 71, 87, ${pulse * 0.5})`;
       ctx.lineWidth = 12;
       ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
       // Warning text flashing (Positioned just below the HUD to avoid blocking the player)
       if (Math.floor(gameTime / 12) % 2 === 0) {
-        ctx.font = '900 26px var(--font-game)';
-        ctx.fillStyle = '#ff4757';
-        ctx.textAlign = 'center';
+        // NOTE: CSS variables (var(--font-game)) are NOT supported in canvas font strings
+        // on mobile browsers. Use actual font family names and measureText for centering.
+        ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
-        
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 4;
-        ctx.strokeText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, 260);
-        ctx.fillText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, 260);
-        
-        ctx.font = '800 11px var(--font-retro)';
+
+        const warnText1 = '⚠️ カラスの大群 接近中！ ⚠️';
+        ctx.font = '900 26px "M PLUS Rounded 1c", sans-serif';
+        const w1 = ctx.measureText(warnText1).width;
+        const x1 = (GAME_WIDTH - w1) / 2;
+        ctx.fillStyle = '#ff4757';
+        ctx.strokeText(warnText1, x1, 260);
+        ctx.fillText(warnText1, x1, 260);
+
+        const warnText2 = 'DANGER! CROW SWARM INCOMING!';
+        ctx.font = '800 11px "Press Start 2P", monospace';
+        const w2 = ctx.measureText(warnText2).width;
+        const x2 = (GAME_WIDTH - w2) / 2;
         ctx.fillStyle = '#ffa502';
-        ctx.textAlign = 'center';
-        ctx.strokeText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, 295);
-        ctx.fillText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, 295);
+        ctx.strokeText(warnText2, x2, 295);
+        ctx.fillText(warnText2, x2, 295);
       }
       ctx.restore();
     }
@@ -3285,9 +3289,6 @@ function gameLoop(timestamp) {
     if (eventActive) {
       // Vignette border
       ctx.save();
-      // Explicitly reset text state to prevent leakage from prior draw calls
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
       ctx.strokeStyle = 'rgba(255, 71, 87, 0.25)';
       ctx.lineWidth = 8;
       ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -3296,7 +3297,7 @@ function gameLoop(timestamp) {
       ctx.fillStyle = 'rgba(255, 71, 87, 0.04)';
       ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-      // Swarm Active banner background (Just below HTML HUD gauges, transparent)
+      // Swarm Active banner background
       ctx.fillStyle = 'rgba(10, 15, 30, 0.45)';
       ctx.strokeStyle = '#ff4757';
       ctx.lineWidth = 2;
@@ -3304,23 +3305,26 @@ function gameLoop(timestamp) {
       const bannerW = 450;
       const bannerH = 40;
       const bannerX = (GAME_WIDTH - bannerW) / 2;
-      const bannerCenterX = bannerX + bannerW / 2;
       const bannerY = 190;
       
       ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
       ctx.strokeRect(bannerX, bannerY, bannerW, bannerH);
 
-      // Swarm Active banner text
+      // Swarm Active banner text — use measureText for reliable centering on mobile
       const remainingSec = Math.ceil(eventTimer / 60);
-      ctx.font = '900 15px var(--font-game)';
+      const bannerText = `⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`;
+      ctx.font = '900 15px "M PLUS Rounded 1c", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const btw = ctx.measureText(bannerText).width;
+      const btx = (GAME_WIDTH - btw) / 2;
+      const bty = bannerY + bannerH / 2;
+
       ctx.fillStyle = '#ff4757';
-      ctx.textAlign = 'center';     // 明示的にリセット
-      ctx.textBaseline = 'middle';  // 明示的にリセット
-      
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 3;
-      ctx.strokeText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, bannerCenterX, bannerY + bannerH / 2);
-      ctx.fillText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, bannerCenterX, bannerY + bannerH / 2);
+      ctx.strokeText(bannerText, btx, bty);
+      ctx.fillText(bannerText, btx, bty);
       ctx.restore();
     }
     
