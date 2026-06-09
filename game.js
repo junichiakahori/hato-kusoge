@@ -306,7 +306,7 @@ function saveGameData() {
 // ご自身のSupabaseプロジェクトのURLとAnon Keyをここに設定してください。
 // 設定されるまでは自動的にブラウザのLocalStorageを利用するフォールバックモードで動作します。
 const SUPABASE_URL = 'https://shyplemeslmxvchbrhyy.supabase.co';
-const SUPABASE_KEY = 'your-anon-public-key';
+const SUPABASE_KEY = 'sb_publishable_68g79C428vz_ajM8t8VMkg_VppJ7G5o';
 
 const isSupabaseConfigured = SUPABASE_KEY !== 'your-anon-public-key' && SUPABASE_KEY !== '';
 
