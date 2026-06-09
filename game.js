@@ -555,9 +555,18 @@ class Pigeon {
     // Land on wire logic (when pressing Up/W or sliding near wire)
     const upPressed = keys['ArrowUp'] || keys['KeyW'];
 
-    // Apply gravity
-    this.vy += 0.22; // gravity force
-    if (this.vy > 7.5) this.vy = 7.5; // terminal velocity cap
+    // Glide vs Fall physics
+    if (this.stamina > 0) {
+      if (this.vy < 0.8) {
+        this.vy += 0.22; // gravity to slow down upward thrust
+      } else {
+        this.vy = 0.8; // constant slow glide sink rate
+      }
+    } else {
+      // Out of stamina: fall fast
+      this.vy += 0.35; // strong gravity
+      if (this.vy > 8) this.vy = 8; // terminal velocity
+    }
     
     // Position Update
     this.x += this.vx;
