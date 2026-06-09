@@ -2340,26 +2340,110 @@ function checkCollisions() {
 }
 
 // --- RENDERING PARALLAX & ENVIRONMENT ---
+const SKY_COLORS = {
+  morning: {
+    top: { r: 64, g: 101, b: 138 },      // #40658a
+    mid: { r: 169, g: 195, b: 235 },     // #a9c3eb
+    bottom: { r: 251, g: 197, b: 176 },  // #fbc5b0
+    city: { r: 40, g: 50, b: 65 },
+    windowGlow: 0.05
+  },
+  noon: {
+    top: { r: 26, g: 115, b: 232 },      // #1a73e8
+    mid: { r: 52, g: 152, b: 219 },      // #3498db
+    bottom: { r: 135, g: 206, b: 250 },  // #87cefa
+    city: { r: 25, g: 40, b: 60 },
+    windowGlow: 0.0
+  },
+  sunset: {
+    top: { r: 31, g: 28, b: 44 },        // #1f1c2c
+    mid: { r: 91, g: 43, b: 90 },        // #5b2b5a
+    bottom: { r: 233, g: 100, b: 67 },   // #e96443
+    city: { r: 35, g: 24, b: 43 },
+    windowGlow: 0.2
+  },
+  night: {
+    top: { r: 9, g: 14, b: 23 },         // #090e17
+    mid: { r: 17, g: 27, b: 45 },        // #111b2d
+    bottom: { r: 30, g: 45, b: 74 },     // #1e2d4a
+    city: { r: 16, g: 23, b: 38 },       // #101726
+    windowGlow: 0.4
+  }
+};
+
+function colorToCss(c) {
+  return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a !== undefined ? c.a : 1})`;
+}
+
+function getAmbientState() {
+  const PHASE_DURATION = 1800; // 30 seconds per phase transition (total 2 mins cycle)
+  const TOTAL_PHASES = 4;
+  const cycleFrames = gameTime % (PHASE_DURATION * TOTAL_PHASES);
+  const segment = Math.floor(cycleFrames / PHASE_DURATION);
+  const progress = (cycleFrames % PHASE_DURATION) / PHASE_DURATION;
+
+  let from, to;
+  if (segment === 0) {
+    from = SKY_COLORS.morning;
+    to = SKY_COLORS.noon;
+  } else if (segment === 1) {
+    from = SKY_COLORS.noon;
+    to = SKY_COLORS.sunset;
+  } else if (segment === 2) {
+    from = SKY_COLORS.sunset;
+    to = SKY_COLORS.night;
+  } else {
+    from = SKY_COLORS.night;
+    to = SKY_COLORS.morning;
+  }
+
+  const lerp = (c1, c2, f) => ({
+    r: Math.round(c1.r + (c2.r - c1.r) * f),
+    g: Math.round(c1.g + (c2.g - c1.g) * f),
+    b: Math.round(c1.b + (c2.b - c1.b) * f)
+  });
+
+  let starAlpha = 0;
+  if (segment === 2) {
+    starAlpha = progress;
+  } else if (segment === 3) {
+    starAlpha = 1 - progress;
+  }
+
+  return {
+    top: colorToCss(lerp(from.top, to.top, progress)),
+    mid: colorToCss(lerp(from.mid, to.mid, progress)),
+    bottom: colorToCss(lerp(from.bottom, to.bottom, progress)),
+    city: colorToCss(lerp(from.city, to.city, progress)),
+    windowGlow: from.windowGlow + (to.windowGlow - from.windowGlow) * progress,
+    starAlpha: starAlpha,
+    phaseName: ['Morning', 'Daytime', 'Sunset', 'Nighttime'][segment]
+  };
+}
+
 function drawSky(time) {
-  // Sky color shifts to warm gradient depending on time (simulating progressive sunset)
+  const ambient = getAmbientState();
   const grad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  grad.addColorStop(0, '#090e17');
-  grad.addColorStop(0.5, '#111b2d');
-  grad.addColorStop(1, '#1e2d4a');
+  grad.addColorStop(0, ambient.top);
+  grad.addColorStop(0.5, ambient.mid);
+  grad.addColorStop(1, ambient.bottom);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
   // Far star sparkles
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  for (let i = 0; i < 20; i++) {
-    const sx = (i * 123 + scrollX * 0.05) % GAME_WIDTH;
-    const sy = (i * 45) % (GAME_HEIGHT - 120);
-    const size = Math.abs(Math.sin((gameTime + i*10) * 0.05)) * 1.5;
-    ctx.fillRect(sx, sy, size, size);
+  if (ambient.starAlpha > 0) {
+    ctx.fillStyle = `rgba(255, 255, 255, ${ambient.starAlpha * 0.4})`;
+    for (let i = 0; i < 20; i++) {
+      const sx = (i * 123 + scrollX * 0.05) % GAME_WIDTH;
+      const sy = (i * 45) % (GAME_HEIGHT - 120);
+      const size = Math.abs(Math.sin((gameTime + i * 10) * 0.05)) * 1.5;
+      ctx.fillRect(sx, sy, size, size);
+    }
   }
 
   // Draw background clouds (Parallax layer 1)
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  const cloudAlpha = 0.06 + (ambient.phaseName === 'Daytime' ? 0.08 : 0.04);
+  ctx.fillStyle = `rgba(255, 255, 255, ${cloudAlpha})`;
   for (let i = 0; i < 5; i++) {
     const cx = (i * 350 - scrollX * 0.25) % (GAME_WIDTH + 200) - 100;
     const cy = 60 + i * 25;
@@ -2372,8 +2456,9 @@ function drawSky(time) {
 }
 
 function drawCityscape() {
+  const ambient = getAmbientState();
   // Parallax layer 2 (Skyscrapers silhouettes)
-  ctx.fillStyle = '#101726';
+  ctx.fillStyle = ambient.city;
   
   for (let i = 0; i < 12; i++) {
     const w = 70 + (i % 3) * 30;
@@ -2384,23 +2469,24 @@ function drawCityscape() {
     ctx.fillRect(x, y, w, h);
     
     // Draw some simple bright neon windows inside buildings
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
     for (let wx = x + 10; wx < x + w - 10; wx += 20) {
       for (let wy = y + 15; wy < y + h - 20; wy += 35) {
         if ((wx + wy) % 3 === 0) {
-          ctx.fillStyle = 'rgba(241, 196, 15, 0.15)'; // glowing yellow window
+          ctx.fillStyle = `rgba(241, 196, 15, ${ambient.windowGlow})`; // glowing yellow window
         } else {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+          ctx.fillStyle = `rgba(255, 255, 255, ${ambient.windowGlow * 0.25})`;
         }
-        ctx.fillRect(wx, wy, 8, 12);
+        if (ambient.windowGlow > 0) {
+          ctx.fillRect(wx, wy, 8, 12);
+        }
       }
     }
-    ctx.fillStyle = '#101726'; // return color
+    ctx.fillStyle = ambient.city; // return color
   }
 
   // Tokyo Tower or antenna in background (far right)
   const towerX = (600 - scrollX * 0.4) % (GAME_WIDTH + 150) - 100;
-  ctx.strokeStyle = '#101726';
+  ctx.strokeStyle = ambient.city;
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(towerX, GAME_HEIGHT - 65);
