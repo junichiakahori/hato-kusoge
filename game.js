@@ -247,6 +247,34 @@ class GameAudio {
       osc.stop(now + idx * 0.15 + 0.18);
     });
   }
+
+  playAlert() {
+    if (this.muted || !this.ctx) return;
+    this.resume();
+    
+    const now = this.ctx.currentTime;
+    // Multi-pulse retro siren
+    for (let i = 0; i < 3; i++) {
+      const startTime = now + i * 0.25;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(660, startTime);
+      osc.frequency.linearRampToValueAtTime(880, startTime + 0.15);
+      
+      gain.gain.setValueAtTime(0.0, startTime);
+      gain.gain.linearRampToValueAtTime(0.12, startTime + 0.03);
+      gain.gain.linearRampToValueAtTime(0.08, startTime + 0.1);
+      gain.gain.linearRampToValueAtTime(0.01, startTime + 0.18);
+      
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.start(startTime);
+      osc.stop(startTime + 0.18);
+    }
+  }
 }
 
 const audio = new GameAudio();
@@ -778,6 +806,13 @@ let gameSpeed = 3.5;
 let minGameSpeed = 3.5;
 let maxGameSpeed = 8;
 let gameTime = 0;
+
+// Event System (e.g. Crow Swarm)
+let eventActive = false;
+let eventTimer = 0;
+let eventWarningTimer = 0;
+let eventSpawnCooldown = 0;
+let eventSpawnTimer = 0;
 
 // Pigeon (Player) Definition
 class Pigeon {
@@ -1355,11 +1390,11 @@ class Wire {
 // --- ENEMIES ---
 // Crow (flies horizontally, bobs)
 class Crow {
-  constructor(x, y) {
+  constructor(x, y, speed = null) {
     this.x = x;
     this.y = y;
     this.radius = 16;
-    this.speed = 2 + Math.random() * 2;
+    this.speed = speed !== null ? speed : (2 + Math.random() * 2);
     this.bobFreq = 0.05 + Math.random() * 0.05;
     this.bobAmp = 15;
     this.startY = y;
@@ -2122,18 +2157,20 @@ function spawnSystems() {
     nextSpawnTimers.landmark = 160 + Math.random() * 150;
   }
 
-  // Spawn Crows & Cats
-  nextSpawnTimers.enemy--;
-  if (nextSpawnTimers.enemy <= 0) {
-    const isCat = Math.random() < 0.45;
-    if (isCat) {
-      enemies.push(new Cat(GAME_WIDTH + 50));
-    } else {
-      // Crow heights: between top and powerline
-      const crowY = 60 + Math.random() * 550;
-      enemies.push(new Crow(GAME_WIDTH + 50, crowY));
+  // Spawn Crows & Cats (Suspended during swarm events)
+  if (!eventActive && eventWarningTimer === 0) {
+    nextSpawnTimers.enemy--;
+    if (nextSpawnTimers.enemy <= 0) {
+      const isCat = Math.random() < 0.45;
+      if (isCat) {
+        enemies.push(new Cat(GAME_WIDTH + 50));
+      } else {
+        // Crow heights: between top and powerline
+        const crowY = 60 + Math.random() * 550;
+        enemies.push(new Crow(GAME_WIDTH + 50, crowY));
+      }
+      nextSpawnTimers.enemy = 120 + Math.random() * 140 - (gameSpeed * 5); // Speeds up spawn
     }
-    nextSpawnTimers.enemy = 120 + Math.random() * 140 - (gameSpeed * 5); // Speeds up spawn
   }
 
   // Spawn breadcrumbs & green beans
@@ -2156,6 +2193,97 @@ function spawnSystems() {
       pedestrians.push(new Pedestrian(GAME_WIDTH + 50));
     }
     nextSpawnTimers.pedestrian = 80 + Math.random() * 130;
+  }
+}
+
+// --- EVENT SYSTEM (CROW SWARM) LOGIC ---
+function updateEventSystem() {
+  if (!eventActive && eventWarningTimer === 0) {
+    if (eventSpawnCooldown > 0) {
+      eventSpawnCooldown--;
+    } else {
+      // Trigger warning phase
+      eventWarningTimer = 180; // 3 seconds warning
+      audio.playAlert();
+    }
+  }
+
+  if (eventWarningTimer > 0) {
+    eventWarningTimer--;
+    // Repeat alert sound at regular intervals
+    if (eventWarningTimer % 45 === 0) {
+      audio.playAlert();
+    }
+    if (eventWarningTimer === 0) {
+      // Transition to active swarm
+      eventActive = true;
+      eventTimer = 480; // 8 seconds duration
+      eventSpawnTimer = 0; // Trigger immediate first wave spawn
+    }
+  }
+
+  if (eventActive) {
+    eventTimer--;
+    
+    // Spawn swarm waves
+    eventSpawnTimer--;
+    if (eventSpawnTimer <= 0) {
+      spawnSwarmWave();
+      // Set time to next wave spawn in this event (every 1.5 to 2.5 seconds)
+      eventSpawnTimer = 90 + Math.random() * 60;
+    }
+
+    if (eventTimer <= 0) {
+      eventActive = false;
+      // Set next event cooldown (20 to 30 seconds)
+      eventSpawnCooldown = 1200 + Math.random() * 600;
+    }
+  }
+}
+
+function spawnSwarmWave() {
+  const patterns = ['wall', 'v-shape', 'wave', 'fast-scout'];
+  const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+  if (pattern === 'wall') {
+    // Wall formation: 4 crows vertically with 1 gap
+    const gapType = Math.floor(Math.random() * 4); // 0, 1, 2, 3
+    const heights = [150, 320, 490, 660];
+    heights.forEach((h, idx) => {
+      if (idx !== gapType) {
+        enemies.push(new Crow(GAME_WIDTH + 50, h));
+      }
+    });
+    // Add text notification bubble in the center of the screen
+    particles.push(new TextBubbleParticle(GAME_WIDTH / 2, 200, "壁型フォーメーション！ 🧱", "#ff4757", 90));
+  } 
+  else if (pattern === 'v-shape') {
+    // V-formation: 3 crows in a V shape
+    const centerY = 200 + Math.random() * 400;
+    enemies.push(new Crow(GAME_WIDTH + 50, centerY));
+    enemies.push(new Crow(GAME_WIDTH + 110, centerY - 70));
+    enemies.push(new Crow(GAME_WIDTH + 110, centerY + 70));
+    
+    particles.push(new TextBubbleParticle(GAME_WIDTH / 2, 200, "V字フォーメーション！ 📐", "#ff4757", 90));
+  }
+  else if (pattern === 'wave') {
+    // Wave formation: 4 crows staggered horizontally in a wave
+    const startY = 200 + Math.random() * 300;
+    for (let i = 0; i < 4; i++) {
+      const crow = new Crow(GAME_WIDTH + 50 + i * 90, startY + Math.sin(i * 1.2) * 80, 1.8); // Pass speed 1.8
+      enemies.push(crow);
+    }
+    particles.push(new TextBubbleParticle(GAME_WIDTH / 2, 200, "ウェーブ！ 🌊", "#ff4757", 90));
+  }
+  else if (pattern === 'fast-scout') {
+    // Fast scout: 2 extremely fast crows
+    const crow1 = new Crow(GAME_WIDTH + 50, 150 + Math.random() * 250, 5.5); // Pass speed 5.5
+    const crow2 = new Crow(GAME_WIDTH + 120, 450 + Math.random() * 250, 5.5); // Pass speed 5.5
+    
+    enemies.push(crow1);
+    enemies.push(crow2);
+    
+    particles.push(new TextBubbleParticle(GAME_WIDTH / 2, 200, "高速突撃！ ⚡", "#ff4757", 90));
   }
 }
 
@@ -2189,6 +2317,13 @@ function resetGamePlay() {
     collectible: 40,
     pedestrian: 30
   };
+
+  // Reset event system states
+  eventActive = false;
+  eventTimer = 0;
+  eventWarningTimer = 0;
+  eventSpawnCooldown = 900; // Delay first swarm event by 15 seconds
+  eventSpawnTimer = 0;
 }
 
 // --- COLLISION LOGIC ---
@@ -3023,7 +3158,8 @@ function gameLoop(timestamp) {
     drawSky();
     drawCityscape();
 
-    // 2. SPAWN NEW ENTITIES
+    // 2. SPAWN NEW ENTITIES & UPDATE EVENTS
+    updateEventSystem();
     spawnSystems();
 
     // 3. UPDATE ENTITIES
@@ -3112,6 +3248,81 @@ function gameLoop(timestamp) {
 
     // Draw foreground pavement
     drawForegroundCity();
+
+    // Draw Event overlays (Warning or Active)
+    if (eventWarningTimer > 0) {
+      // Red flashing vignette border
+      const pulse = Math.abs(Math.sin(gameTime * 0.1));
+      ctx.save();
+      ctx.strokeStyle = `rgba(255, 71, 87, ${pulse * 0.5})`;
+      ctx.lineWidth = 12;
+      ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+      // Center Warning Box
+      ctx.fillStyle = 'rgba(20, 5, 5, 0.9)';
+      ctx.strokeStyle = '#ff4757';
+      ctx.lineWidth = 3;
+      
+      const boxW = 480;
+      const boxH = 140;
+      const boxX = (GAME_WIDTH - boxW) / 2;
+      const boxY = GAME_HEIGHT / 2 - boxH / 2 - 40; // centered in action area
+      
+      ctx.fillRect(boxX, boxY, boxW, boxH);
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+      // Warning text flashing (Centered inside box)
+      if (Math.floor(gameTime / 12) % 2 === 0) {
+        ctx.font = '900 28px var(--font-game)';
+        ctx.fillStyle = '#ff4757';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 6;
+        ctx.fillText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, boxY + 45);
+        
+        ctx.font = '800 11px var(--font-retro)';
+        ctx.fillStyle = '#ffa502';
+        ctx.fillText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, boxY + 95);
+      }
+      ctx.restore();
+    }
+
+    if (eventActive) {
+      // Vignette border
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 71, 87, 0.25)';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+      // Red hue over sky
+      ctx.fillStyle = 'rgba(255, 71, 87, 0.04)';
+      ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+      // Swarm Active banner background (Just below HTML HUD gauges, around y = 190)
+      ctx.fillStyle = 'rgba(20, 5, 5, 0.85)';
+      ctx.strokeStyle = '#ff4757';
+      ctx.lineWidth = 2;
+      
+      const bannerW = 450;
+      const bannerH = 40;
+      const bannerX = (GAME_WIDTH - bannerW) / 2;
+      const bannerY = 190;
+      
+      ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
+      ctx.strokeRect(bannerX, bannerY, bannerW, bannerH);
+
+      // Swarm Active banner text
+      const remainingSec = Math.ceil(eventTimer / 60);
+      ctx.font = '900 15px var(--font-game)';
+      ctx.fillStyle = '#ff4757';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'black';
+      ctx.shadowBlur = 4;
+      ctx.fillText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, GAME_WIDTH / 2, bannerY + bannerH / 2);
+      ctx.restore();
+    }
     
     // Draw virtual touch joystick
     drawJoystick();
