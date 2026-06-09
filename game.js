@@ -312,23 +312,7 @@ const API_URL = (location.hostname.includes('github.io'))
 let rankingData = [];
 
 function getInitialRanking() {
-  const names = ["HATO", "BIRD", "PECKER", "CROW", "KUSOGE", "DRONE", "FLAP", "SPLAT", "COOP", "PIPI", "GULL", "HAWK", "SPARROW", "EAGLE", "DOVE"];
-  const comments = ["クルックー！", "パンくずおいしい", "都会を支配する", "フン爆弾投下！", "カラスに注意", "最高スコア狙う", "ハトカスタム完了", "ポポポッポ", "電線の上は快適", "クソゲー最高"];
-  const list = [];
-  let currentScore = 1200;
-  for (let i = 1; i <= 100; i++) {
-    const name = names[Math.floor(Math.random() * names.length)];
-    const comment = comments[Math.floor(Math.random() * comments.length)];
-    list.push({
-      name: name,
-      score: currentScore,
-      comment: comment,
-      date: `06/08`
-    });
-    currentScore -= Math.floor(Math.random() * 10) + 5;
-    if (currentScore < 5) currentScore = 5;
-  }
-  return list;
+  return [];
 }
 
 function loadRanking(callback) {
@@ -421,6 +405,13 @@ function populateLeaderboard(highlightRank = -1) {
   const tbody = document.getElementById('leaderboard-body');
   if (!tbody) return;
   tbody.innerHTML = '';
+
+  if (rankingData.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 11px;">まだランキングデータがありません。<br>最初の登録者になろう！ 🏆</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
 
   rankingData.forEach((entry, idx) => {
     const rank = idx + 1;

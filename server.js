@@ -5,25 +5,9 @@ const path = require('path');
 const PORT = 3000;
 const RANKING_FILE = path.join(__dirname, 'ranking.json');
 
-// Helper to get initial ranking data
+// Helper to get initial ranking data (starts empty as requested)
 function getInitialRanking() {
-  const names = ["HATO", "BIRD", "PECKER", "CROW", "KUSOGE", "DRONE", "FLAP", "SPLAT", "COOP", "PIPI", "GULL", "HAWK", "SPARROW", "EAGLE", "DOVE"];
-  const comments = ["クルックー！", "パンくずおいしい", "都会を支配する", "フン爆弾投下！", "カラスに注意", "最高スコア狙う", "ハトカスタム完了", "ポポポッポ", "電線の上は快適", "クソゲー最高"];
-  const list = [];
-  let currentScore = 1200;
-  for (let i = 1; i <= 100; i++) {
-    const name = names[Math.floor(Math.random() * names.length)];
-    const comment = comments[Math.floor(Math.random() * comments.length)];
-    list.push({
-      name: name,
-      score: currentScore,
-      comment: comment,
-      date: '06/08'
-    });
-    currentScore -= Math.floor(Math.random() * 10) + 5;
-    if (currentScore < 5) currentScore = 5;
-  }
-  return list;
+  return [];
 }
 
 // Read ranking from file
