@@ -62,10 +62,10 @@
           <div class="instruction-box">
             <h3>🎮 操作方法</h3>
             <ul>
-              <li><span class="key">Space</span> または <span class="key">クリック/タップ</span> : 羽ばたく (上昇)</li>
-              <li><span class="key">←</span> <span class="key">→</span> (A / D) : 左右移動</li>
-              <li><span class="key">↓</span> (S / Z / X) : フン投下！💩</li>
-              <li><span class="key">↑</span> (W) : 電線や街灯に止まってスタミナ回復</li>
+              <li><span class="key">Space</span> または <span class="key">タップ</span> : 羽ばたいてダッシュ</li>
+              <li><span class="key">←</span> <span class="key">→</span> <span class="key">↑</span> <span class="key">↓</span> (A/W/S/D) : 上下左右に飛行移動</li>
+              <li><span class="key">Z</span> / <span class="key">X</span> / <span class="key">Shift</span> : フン投下！💩</li>
+              <li>電線や電柱の先端で <span class="key">↑</span> (W) : 着地して休息</li>
             </ul>
           </div>
           <div class="rule-box">
@@ -200,12 +200,14 @@
 
       <!-- Mobile Touch Controls -->
       <div id="mobile-controls" class="hidden">
-        <div class="mobile-group-left">
-          <button id="ctrl-left" class="ctrl-btn" aria-label="Move Left">◀</button>
-          <button id="ctrl-right" class="ctrl-btn" aria-label="Move Right">▶</button>
+        <div class="mobile-dpad">
+          <button id="ctrl-up" class="ctrl-btn dpad-up" aria-label="Move Up">▲</button>
+          <button id="ctrl-left" class="ctrl-btn dpad-left" aria-label="Move Left">◀</button>
+          <button id="ctrl-right" class="ctrl-btn dpad-right" aria-label="Move Right">▶</button>
+          <button id="ctrl-down" class="ctrl-btn dpad-down" aria-label="Move Down">▼</button>
         </div>
         <div class="mobile-group-right">
-          <button id="ctrl-flap" class="ctrl-btn action-btn" aria-label="Flap Wings">羽ばたく (飛)</button>
+          <button id="ctrl-flap" class="ctrl-btn action-btn" aria-label="Flap Wings">羽ばたく</button>
           <button id="ctrl-poop" class="ctrl-btn action-btn poop-btn" aria-label="Poop">フン 💩</button>
         </div>
       </div>

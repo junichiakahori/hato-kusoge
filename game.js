@@ -311,7 +311,7 @@ canvas.height = GAME_HEIGHT;
 
 // --- INPUT HANDLER ---
 const keys = {};
-let touchInput = { left: false, right: false, flap: false, poop: false };
+let touchInput = { left: false, right: false, up: false, down: false, flap: false, poop: false };
 
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
@@ -328,10 +328,13 @@ window.addEventListener('keyup', (e) => {
 const setupMobileControls = () => {
   const btnLeft = document.getElementById('ctrl-left');
   const btnRight = document.getElementById('ctrl-right');
+  const btnUp = document.getElementById('ctrl-up');
+  const btnDown = document.getElementById('ctrl-down');
   const btnFlap = document.getElementById('ctrl-flap');
   const btnPoop = document.getElementById('ctrl-poop');
 
   const setupButton = (btn, stateKey) => {
+    if (!btn) return;
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       audio.init();
@@ -353,6 +356,8 @@ const setupMobileControls = () => {
 
   setupButton(btnLeft, 'left');
   setupButton(btnRight, 'right');
+  setupButton(btnUp, 'up');
+  setupButton(btnDown, 'down');
   setupButton(btnFlap, 'flap');
   setupButton(btnPoop, 'poop');
 };
@@ -532,9 +537,15 @@ class Pigeon {
     if (keys['ArrowLeft'] || keys['KeyA'] || touchInput.left) moveX = -1;
     if (keys['ArrowRight'] || keys['KeyD'] || touchInput.right) moveX = 1;
 
+    let moveY = 0;
+    if (keys['ArrowUp'] || keys['KeyW'] || touchInput.up) moveY = -1;
+    if (keys['ArrowDown'] || keys['KeyS'] || touchInput.down) moveY = 1;
+
     // Movement speed settings
     const speed = 4.5 * this.speedMult;
     this.vx = moveX * speed;
+
+    const vertSpeed = 3.5 * this.speedMult;
 
     // Flapping
     const spacePressed = keys['Space'] || touchInput.flap;
@@ -544,8 +555,8 @@ class Pigeon {
     this.wasSpacePressed = spacePressed;
     if (touchInput.flap) touchInput.flap = false; // Reset mobile trigger immediately
 
-    // Pooping
-    const poopPressed = keys['ArrowDown'] || keys['KeyS'] || keys['KeyZ'] || keys['KeyX'] || touchInput.poop;
+    // Pooping (Down / S are now movement, so poop is Z / X / Shift)
+    const poopPressed = keys['KeyZ'] || keys['KeyX'] || keys['ShiftLeft'] || keys['ShiftRight'] || touchInput.poop;
     if (poopPressed && !this.wasPoopPressed) {
       this.poop();
     }
@@ -553,14 +564,20 @@ class Pigeon {
     if (touchInput.poop) touchInput.poop = false;
 
     // Land on wire logic (when pressing Up/W or sliding near wire)
-    const upPressed = keys['ArrowUp'] || keys['KeyW'];
+    const upPressed = keys['ArrowUp'] || keys['KeyW'] || touchInput.up;
 
     // Glide vs Fall physics
     if (this.stamina > 0) {
-      if (this.vy < 0.8) {
-        this.vy += 0.22; // gravity to slow down upward thrust
+      if (moveY !== 0) {
+        this.vy = moveY * vertSpeed;
+        this.stamina -= 0.08; // Steering vertically takes a tiny bit of extra stamina
       } else {
-        this.vy = 0.8; // constant slow glide sink rate
+        // Glide physics: constant slow sink rate
+        if (this.vy < 0.8) {
+          this.vy += 0.22; // gravity to slow down upward thrust
+        } else {
+          this.vy = 0.8; // constant slow glide sink rate
+        }
       }
     } else {
       // Out of stamina: fall fast
