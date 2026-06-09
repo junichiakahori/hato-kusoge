@@ -1497,11 +1497,22 @@ class Cat {
 
 // --- COLLECTIBLES (Breadcrumbs & Beans) ---
 class Breadcrumb {
-  constructor(x, y, isBean = false) {
+  constructor(x, y, type = 'crumb') {
     this.x = x;
     this.y = y;
-    this.isBean = isBean;
-    this.radius = isBean ? 9 : 7;
+    
+    // Handle backward compatibility (in case boolean is passed)
+    if (type === true) {
+      this.type = 'bean';
+    } else if (type === false) {
+      this.type = 'crumb';
+    } else {
+      this.type = type;
+    }
+    
+    this.isBean = this.type === 'bean';
+    this.isHeart = this.type === 'heart';
+    this.radius = this.isBean ? 9 : (this.isHeart ? 8 : 7);
     this.pulse = Math.random() * Math.PI;
   }
 
@@ -1527,6 +1538,24 @@ class Breadcrumb {
       // Glow
       ctx.shadowColor = '#2ed573';
       ctx.shadowBlur = 8;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    } else if (this.isHeart) {
+      // Red Heart (Healing item)
+      ctx.fillStyle = '#ff4757';
+      ctx.beginPath();
+      ctx.moveTo(0, -3);
+      ctx.bezierCurveTo(-3, -7, -8, -5, -8, 0);
+      ctx.bezierCurveTo(-8, 5, -3, 8, 0, 11);
+      ctx.bezierCurveTo(3, 8, 8, 5, 8, 0);
+      ctx.bezierCurveTo(8, -5, 3, -7, 0, -3);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Glow
+      ctx.shadowColor = '#ff4757';
+      ctx.shadowBlur = 10;
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
       ctx.stroke();
@@ -2158,7 +2187,6 @@ function checkCollisions() {
     const distance = Math.sqrt(dx*dx + dy*dy);
     
     if (distance < pigeon.radius + item.radius) {
-      // Eat bread!
       audio.playEat();
       const skin = SKINS[gameData.activeSkin] || SKINS.normal;
       
@@ -2170,6 +2198,10 @@ function checkCollisions() {
         levelCrumbs += 5; // beans give 5 crumbs
         
         particles.push(new TextBubbleParticle(item.x, item.y, "STAMINA MAX! ⚡", "#2ed573", 60));
+      } else if (item.isHeart) {
+        // Red Heart = restore 1 HP/Heart (capped at maxHp)
+        pigeon.hp = Math.min(pigeon.maxHp, pigeon.hp + 1);
+        particles.push(new TextBubbleParticle(item.x, item.y, "LIFE RECOVERED! ❤️", "#ff4757", 60));
       } else {
         // Bread crumb = reload 1 poop, restore some stamina, add 1 crumb
         pigeon.stamina = Math.min(pigeon.maxStamina, pigeon.stamina + 20);
@@ -2244,6 +2276,12 @@ function checkCollisions() {
         const label = isCrow ? "CROW DOWN! 💥" : "CAT HIT! 💥";
         particles.push(new TextBubbleParticle(enemy.x, enemy.y, `${label} +${points}`, "#ffd32a", 60));
         
+        // Spawn life heart item by chance on defeating enemies (Crows: 30%, Cats: 50%)
+        const dropChance = isCrow ? 0.30 : 0.50;
+        if (Math.random() < dropChance) {
+          collectibles.push(new Breadcrumb(enemy.x, enemy.y, 'heart'));
+        }
+
         score += points;
         enemies.splice(j, 1);
         poopBullets.splice(i, 1);
