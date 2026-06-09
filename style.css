@@ -295,6 +295,7 @@ body, html {
   background-size: 200% 200%;
   animation: shine 4s ease infinite;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 20px var(--panel-glow);
   margin-top: 6px;
