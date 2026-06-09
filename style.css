@@ -1031,12 +1031,14 @@ body, html {
 .leaderboard-scroll {
   max-height: 200px;
   overflow-y: auto;
+  overflow-x: auto;
   width: 100%;
 }
 
 /* Custom Scrollbar for Leaderboard */
 .leaderboard-scroll::-webkit-scrollbar {
   width: 5px;
+  height: 5px;
 }
 .leaderboard-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.2);
@@ -1048,6 +1050,7 @@ body, html {
 
 #leaderboard-table {
   width: 100%;
+  min-width: 400px;
   border-collapse: collapse;
   font-size: 11px;
 }
@@ -1056,6 +1059,7 @@ body, html {
 #leaderboard-table td {
   padding: 6px 8px;
   text-align: center;
+  white-space: nowrap;
 }
 
 #leaderboard-table th {
