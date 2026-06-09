@@ -365,10 +365,18 @@ body, html {
 /* Button styles */
 .menu-buttons {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
   justify-content: center;
+  align-items: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.menu-buttons .menu-btn {
+  width: 100%;
+  text-align: center;
 }
 
 .menu-btn {
@@ -381,6 +389,7 @@ body, html {
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  white-space: nowrap; /* Prevent caption wrapping */
 }
 
 .primary-btn {
