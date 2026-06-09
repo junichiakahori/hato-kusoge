@@ -302,6 +302,114 @@ function saveGameData() {
   localStorage.setItem('hato_panic_data', JSON.stringify(gameData));
 }
 
+let rankingData = [];
+
+function getInitialRanking() {
+  const names = ["HATO", "BIRD", "PECKER", "CROW", "KUSOGE", "DRONE", "FLAP", "SPLAT", "COOP", "PIPI", "GULL", "HAWK", "SPARROW", "EAGLE", "DOVE"];
+  const list = [];
+  let currentScore = 1200;
+  for (let i = 1; i <= 100; i++) {
+    const name = names[Math.floor(Math.random() * names.length)];
+    list.push({
+      name: name,
+      score: currentScore,
+      date: `2026/06/08`
+    });
+    currentScore -= Math.floor(Math.random() * 10) + 5;
+    if (currentScore < 5) currentScore = 5;
+  }
+  return list;
+}
+
+function loadRanking() {
+  const stored = localStorage.getItem('hato_ranking_data');
+  if (stored) {
+    try {
+      rankingData = JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to parse ranking data', e);
+      rankingData = getInitialRanking();
+    }
+  } else {
+    rankingData = getInitialRanking();
+    saveRanking();
+  }
+}
+
+function saveRanking() {
+  localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+}
+
+function checkRankingQualification(playerScore) {
+  if (rankingData.length < 100) return true;
+  rankingData.sort((a, b) => b.score - a.score);
+  return playerScore > rankingData[99].score;
+}
+
+function registerRankingScore(name, playerScore) {
+  const dateStr = new Date().toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).replace(/\//g, '/');
+
+  const newEntry = {
+    name: name || 'ハト',
+    score: playerScore,
+    date: dateStr
+  };
+
+  rankingData.push(newEntry);
+  rankingData.sort((a, b) => b.score - a.score);
+  if (rankingData.length > 100) {
+    rankingData = rankingData.slice(0, 100);
+  }
+  saveRanking();
+
+  // Find position of the new entry to highlight it
+  const newRank = rankingData.findIndex(entry => entry.name === newEntry.name && entry.score === newEntry.score && entry.date === newEntry.date) + 1;
+  return newRank;
+}
+
+function populateLeaderboard(highlightRank = -1) {
+  const tbody = document.getElementById('leaderboard-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  rankingData.forEach((entry, idx) => {
+    const rank = idx + 1;
+    const tr = document.createElement('tr');
+    if (rank === highlightRank) {
+      tr.className = 'highlight';
+    }
+
+    let rankDisplay = rank;
+    if (rank === 1) rankDisplay = '🥇 1';
+    else if (rank === 2) rankDisplay = '🥈 2';
+    else if (rank === 3) rankDisplay = '🥉 3';
+
+    tr.innerHTML = `
+      <td>${rankDisplay}</td>
+      <td>${escapeHTML(entry.name)}</td>
+      <td>${entry.score}</td>
+      <td>${entry.date}</td>
+    `;
+    tbody.appendChild(tr);
+
+    if (rank === highlightRank) {
+      setTimeout(() => {
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  });
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g,
+    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+  );
+}
+
 // --- CANVAS SETUP ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -2185,10 +2293,29 @@ function triggerGameOver() {
   
   saveGameData();
 
+  // Reset tab view state to Results tab
+  document.getElementById('tab-results').classList.add('active');
+  document.getElementById('tab-leaderboard').classList.remove('active');
+  document.getElementById('tab-content-results').classList.remove('hidden');
+  document.getElementById('tab-content-leaderboard').classList.add('hidden');
+
   // Show Game Over Overlay
   document.getElementById('final-score').textContent = score;
   document.getElementById('final-crumbs').textContent = levelCrumbs;
   document.getElementById('high-score').textContent = gameData.highScore;
+
+  // Check ranking qualification
+  const isQualified = checkRankingQualification(score);
+  const registerBox = document.getElementById('ranking-register-box');
+  if (isQualified) {
+    document.getElementById('player-name-input').value = '';
+    registerBox.classList.remove('hidden');
+  } else {
+    registerBox.classList.add('hidden');
+  }
+
+  // Pre-populate leaderboard lists just in case
+  populateLeaderboard();
 
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('mobile-controls').classList.add('hidden');
@@ -2406,6 +2533,59 @@ function setupUIEvents() {
     audio.muted = !audio.muted;
     document.getElementById('btn-audio-toggle').textContent = audio.muted ? '🔇' : '🔊';
   });
+
+  // --- Game Over Tabs & Leaderboard Event Handlers ---
+  const tabResults = document.getElementById('tab-results');
+  const tabLeaderboard = document.getElementById('tab-leaderboard');
+  const contentResults = document.getElementById('tab-content-results');
+  const contentLeaderboard = document.getElementById('tab-content-leaderboard');
+
+  if (tabResults && tabLeaderboard) {
+    tabResults.addEventListener('click', () => {
+      audio.init();
+      tabResults.classList.add('active');
+      tabLeaderboard.classList.remove('active');
+      contentResults.classList.remove('hidden');
+      contentLeaderboard.classList.add('hidden');
+    });
+
+    tabLeaderboard.addEventListener('click', () => {
+      audio.init();
+      tabLeaderboard.classList.add('active');
+      tabResults.classList.remove('active');
+      contentLeaderboard.classList.remove('hidden');
+      contentResults.classList.add('hidden');
+      populateLeaderboard();
+    });
+  }
+
+  // Submit high score to ranking
+  const btnSubmit = document.getElementById('btn-submit-score');
+  if (btnSubmit) {
+    btnSubmit.addEventListener('click', () => {
+      audio.init();
+      const nameInput = document.getElementById('player-name-input');
+      const playerName = (nameInput ? nameInput.value.trim() : '') || 'ハト';
+
+      // Register the score
+      const rank = registerRankingScore(playerName, score);
+
+      // Refresh table and highlight player rank
+      populateLeaderboard(rank);
+
+      // Hide registration panel
+      const registerBox = document.getElementById('ranking-register-box');
+      if (registerBox) registerBox.classList.add('hidden');
+
+      // Switch to Leaderboard tab
+      if (tabLeaderboard && tabResults && contentLeaderboard && contentResults) {
+        tabLeaderboard.classList.add('active');
+        tabResults.classList.remove('active');
+        contentLeaderboard.classList.remove('hidden');
+        contentResults.classList.add('hidden');
+      }
+    });
+  }
 }
 
 // --- MAIN GAME LOOP ---
@@ -2559,6 +2739,7 @@ function gameLoop() {
 // --- INIT APP ---
 window.addEventListener('load', () => {
   loadGameData();
+  loadRanking();
   setupUIEvents();
   setupMobileControls();
   

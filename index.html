@@ -176,19 +176,58 @@
       <div id="game-over-screen" class="menu-overlay hidden">
         <h2 class="game-over-title">GAME OVER</h2>
         <p class="game-over-desc">ハトは力尽きてしまった...</p>
-        
-        <div class="score-summary">
-          <div class="summary-row">
-            <span>今回のスコア:</span>
-            <span id="final-score" class="summary-val">0</span>
+
+        <!-- Tabs to switch between Results and Leaderboard -->
+        <div class="game-over-tabs">
+          <button id="tab-results" class="tab-btn active">今回の結果</button>
+          <button id="tab-leaderboard" class="tab-btn">ランキング (TOP 100)</button>
+        </div>
+
+        <!-- Tab 1: Results Content -->
+        <div id="tab-content-results" class="tab-content">
+          <div class="score-summary">
+            <div class="summary-row">
+              <span>今回のスコア:</span>
+              <span id="final-score" class="summary-val">0</span>
+            </div>
+            <div class="summary-row">
+              <span>集めたパンくず:</span>
+              <span id="final-crumbs" class="summary-val">0</span>
+            </div>
+            <div class="summary-row highscore-row">
+              <span>ハイスコア:</span>
+              <span id="high-score" class="summary-val">0</span>
+            </div>
           </div>
-          <div class="summary-row">
-            <span>集めたパンくず:</span>
-            <span id="final-crumbs" class="summary-val">0</span>
+
+          <!-- Name registration form if ranked in top 100 -->
+          <div id="ranking-register-box" class="hidden">
+            <p class="ranking-congrats">🎉 100位以内にランクイン！</p>
+            <div class="ranking-input-group">
+              <input type="text" id="player-name-input" placeholder="名前を入力 (最大8文字)" maxlength="8">
+              <button id="btn-submit-score" class="menu-btn primary-btn">登録 🏆</button>
+            </div>
           </div>
-          <div class="summary-row highscore-row">
-            <span>ハイスコア:</span>
-            <span id="high-score" class="summary-val">0</span>
+        </div>
+
+        <!-- Tab 2: Leaderboard Content -->
+        <div id="tab-content-leaderboard" class="tab-content hidden">
+          <div class="leaderboard-container">
+            <div class="leaderboard-scroll">
+              <table id="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>順位</th>
+                    <th>名前</th>
+                    <th>スコア</th>
+                    <th>日付</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
