@@ -3254,6 +3254,9 @@ function gameLoop(timestamp) {
       // Red flashing vignette border
       const pulse = Math.abs(Math.sin(gameTime * 0.1));
       ctx.save();
+      // Explicitly reset text state to prevent leakage from prior draw calls
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
       ctx.strokeStyle = `rgba(255, 71, 87, ${pulse * 0.5})`;
       ctx.lineWidth = 12;
       ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -3263,6 +3266,7 @@ function gameLoop(timestamp) {
         ctx.font = '900 26px var(--font-game)';
         ctx.fillStyle = '#ff4757';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
         
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 4;
@@ -3271,6 +3275,7 @@ function gameLoop(timestamp) {
         
         ctx.font = '800 11px var(--font-retro)';
         ctx.fillStyle = '#ffa502';
+        ctx.textAlign = 'center';
         ctx.strokeText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, 295);
         ctx.fillText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, 295);
       }
@@ -3280,6 +3285,9 @@ function gameLoop(timestamp) {
     if (eventActive) {
       // Vignette border
       ctx.save();
+      // Explicitly reset text state to prevent leakage from prior draw calls
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.strokeStyle = 'rgba(255, 71, 87, 0.25)';
       ctx.lineWidth = 8;
       ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -3296,6 +3304,7 @@ function gameLoop(timestamp) {
       const bannerW = 450;
       const bannerH = 40;
       const bannerX = (GAME_WIDTH - bannerW) / 2;
+      const bannerCenterX = bannerX + bannerW / 2;
       const bannerY = 190;
       
       ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
@@ -3305,13 +3314,13 @@ function gameLoop(timestamp) {
       const remainingSec = Math.ceil(eventTimer / 60);
       ctx.font = '900 15px var(--font-game)';
       ctx.fillStyle = '#ff4757';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';     // 明示的にリセット
+      ctx.textBaseline = 'middle';  // 明示的にリセット
       
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 3;
-      ctx.strokeText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, GAME_WIDTH / 2, bannerY + bannerH / 2);
-      ctx.fillText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, GAME_WIDTH / 2, bannerY + bannerH / 2);
+      ctx.strokeText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, bannerCenterX, bannerY + bannerH / 2);
+      ctx.fillText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, bannerCenterX, bannerY + bannerH / 2);
       ctx.restore();
     }
     
