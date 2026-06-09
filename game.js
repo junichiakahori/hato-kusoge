@@ -305,10 +305,10 @@ function saveGameData() {
 // Supabase Configuration
 // ご自身のSupabaseプロジェクトのURLとAnon Keyをここに設定してください。
 // 設定されるまでは自動的にブラウザのLocalStorageを利用するフォールバックモードで動作します。
-const SUPABASE_URL = 'https://your-project-id.supabase.co';
+const SUPABASE_URL = 'https://shyplemeslmxvchbrhyy.supabase.co';
 const SUPABASE_KEY = 'your-anon-public-key';
 
-const isSupabaseConfigured = SUPABASE_URL !== 'https://your-project-id.supabase.co' && SUPABASE_KEY !== 'your-anon-public-key';
+const isSupabaseConfigured = SUPABASE_KEY !== 'your-anon-public-key' && SUPABASE_KEY !== '';
 
 // Automatically sanitize URL in case user copies with trailing slash or '/rest/v1/'
 const SUPABASE_BASE_URL = (() => {
