@@ -332,6 +332,111 @@ class GameAudio {
     osc1.stop(startTime + duration);
     osc2.stop(startTime + duration);
   }
+
+  playCat() {
+    if (this.muted || !this.ctx) return;
+    this.resume();
+
+    const now = this.ctx.currentTime;
+    this.synthCatSound(now);
+  }
+
+  synthCatSound(startTime) {
+    const duration = 0.5;
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'triangle';
+
+    // Cat meow pitch curve (750Hz -> 900Hz -> 550Hz)
+    osc.frequency.setValueAtTime(750, startTime);
+    osc.frequency.linearRampToValueAtTime(900, startTime + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(550, startTime + duration);
+
+    // Warm, slightly nasal filter for animal vocal sound
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1200, startTime);
+    filter.frequency.exponentialRampToValueAtTime(800, startTime + duration);
+
+    // Envelope
+    gainNode.gain.setValueAtTime(0.01, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.08);
+    gainNode.gain.linearRampToValueAtTime(0.08, startTime + duration * 0.7);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    osc.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  }
+
+  playCar() {
+    if (this.muted || !this.ctx) return;
+    this.resume();
+
+    const now = this.ctx.currentTime;
+    this.synthCarSound(now);
+  }
+
+  synthCarSound(startTime) {
+    const duration = 1.8;
+    
+    // 1. Engine low roar (sawtooth)
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    const oscFilter = this.ctx.createBiquadFilter();
+    
+    osc.type = 'sawtooth';
+    // Doppler pitch shift (100Hz -> 110Hz -> 65Hz as it passes)
+    osc.frequency.setValueAtTime(100, startTime);
+    osc.frequency.linearRampToValueAtTime(110, startTime + duration * 0.4);
+    osc.frequency.exponentialRampToValueAtTime(65, startTime + duration);
+
+    oscFilter.type = 'lowpass';
+    oscFilter.frequency.setValueAtTime(250, startTime);
+    oscFilter.frequency.exponentialRampToValueAtTime(150, startTime + duration);
+
+    oscGain.gain.setValueAtTime(0.01, startTime);
+    oscGain.gain.linearRampToValueAtTime(0.18, startTime + duration * 0.45); // Max volume at midpoint
+    oscGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    osc.connect(oscFilter);
+    oscFilter.connect(oscGain);
+    oscGain.connect(this.ctx.destination);
+
+    // 2. Road noise (filtered white noise)
+    const bufferSize = this.ctx.sampleRate * duration;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const noiseFilter = this.ctx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(160, startTime);
+    noiseFilter.frequency.exponentialRampToValueAtTime(110, startTime + duration);
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.01, startTime);
+    noiseGain.gain.linearRampToValueAtTime(0.12, startTime + duration * 0.45);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(this.ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+    noise.start(startTime);
+    noise.stop(startTime + duration);
+  }
 }
 
 const audio = new GameAudio();
@@ -1558,6 +1663,7 @@ class Cat {
         this.hasScreamed = true;
         // Spawn meow reaction bubble
         particles.push(new TextBubbleParticle(this.x, this.y - 15, "ニャー！🐾", "#ff4757"));
+        audio.playCat();
       }
 
       // Hit ground
@@ -2221,6 +2327,9 @@ function spawnSystems() {
       const isCat = Math.random() < 0.45;
       if (isCat) {
         enemies.push(new Cat(GAME_WIDTH + 50));
+        if (Math.random() < 0.6) {
+          audio.playCat();
+        }
       } else {
         // Crow heights: between top and powerline
         const crowY = 60 + Math.random() * 550;
@@ -2249,6 +2358,7 @@ function spawnSystems() {
     const isCar = Math.random() < 0.35;
     if (isCar) {
       pedestrians.push(new Car(GAME_WIDTH + 100));
+      audio.playCar();
     } else {
       pedestrians.push(new Pedestrian(GAME_WIDTH + 50));
     }
