@@ -424,7 +424,7 @@ class Pigeon {
 
   flap() {
     if (this.stamina <= 0) return;
-    this.vy = -7.5;
+    this.vy = -5.8;
     this.isFlapping = true;
     this.flapTimer = 8;
     this.perchedOn = null;
@@ -556,7 +556,8 @@ class Pigeon {
     const upPressed = keys['ArrowUp'] || keys['KeyW'];
 
     // Apply gravity
-    this.vy += 0.35; // gravity force
+    this.vy += 0.22; // gravity force
+    if (this.vy > 7.5) this.vy = 7.5; // terminal velocity cap
     
     // Position Update
     this.x += this.vx;
