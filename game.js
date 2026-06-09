@@ -302,12 +302,13 @@ function saveGameData() {
   localStorage.setItem('hato_panic_data', JSON.stringify(gameData));
 }
 
-// Render.comにデプロイしたサーバーのURLをここに設定してください
-const RENDER_API_URL = 'https://hato-kusoge.onrender.com/api/ranking';
+// Supabase Configuration
+// ご自身のSupabaseプロジェクトのURLとAnon Keyをここに設定してください。
+// 設定されるまでは自動的にブラウザのLocalStorageを利用するフォールバックモードで動作します。
+const SUPABASE_URL = 'https://your-project-id.supabase.co';
+const SUPABASE_KEY = 'your-anon-public-key';
 
-const API_URL = (location.hostname.includes('github.io'))
-  ? RENDER_API_URL
-  : '/api/ranking';
+const isSupabaseConfigured = SUPABASE_URL !== 'https://your-project-id.supabase.co' && SUPABASE_KEY !== 'your-anon-public-key';
 
 let rankingData = [];
 
@@ -315,19 +316,56 @@ function getInitialRanking() {
   return [];
 }
 
+// Convert ISO timestamp from Supabase to MM/DD format
+function formatSupabaseDate(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${m}/${d}`;
+}
+
 function loadRanking(callback) {
-  fetch(API_URL)
+  if (!isSupabaseConfigured) {
+    // LocalStorage Fallback mode
+    const stored = localStorage.getItem('hato_ranking_data');
+    if (stored) {
+      try {
+        rankingData = JSON.parse(stored);
+      } catch (e) {
+        rankingData = getInitialRanking();
+      }
+    } else {
+      rankingData = getInitialRanking();
+    }
+    if (callback) callback(rankingData);
+    return;
+  }
+
+  const url = `${SUPABASE_URL}/rest/v1/ranking?select=name,score,comment,created_at&order=score.desc&limit=100`;
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    }
+  })
     .then(response => {
-      if (!response.ok) throw new Error('API response error');
+      if (!response.ok) throw new Error('Supabase request error');
       return response.json();
     })
     .then(data => {
-      rankingData = data;
+      rankingData = data.map(item => ({
+        name: item.name,
+        score: parseInt(item.score),
+        comment: item.comment || '',
+        date: formatSupabaseDate(item.created_at)
+      }));
       localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
       if (callback) callback(rankingData);
     })
     .catch(error => {
-      console.warn('Failed to load ranking from server, using local fallback:', error);
+      console.warn('Failed to load ranking from Supabase, using local fallback:', error);
       const stored = localStorage.getItem('hato_ranking_data');
       if (stored) {
         try {
@@ -349,30 +387,70 @@ function checkRankingQualification(playerScore) {
 }
 
 function registerRankingScore(name, playerScore, comment, callback) {
+  if (!isSupabaseConfigured) {
+    // LocalStorage Fallback mode
+    const dateStr = new Date().toLocaleDateString('ja-JP', {
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '/');
+
+    const newEntry = {
+      name: (name || 'ハト').slice(0, 8),
+      score: playerScore,
+      comment: (comment || '').slice(0, 20),
+      date: dateStr
+    };
+
+    rankingData.push(newEntry);
+    rankingData.sort((a, b) => b.score - a.score);
+    rankingData = rankingData.slice(0, 100);
+    localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+
+    const newRank = rankingData.findIndex(entry => 
+      entry.name === newEntry.name && 
+      entry.score === newEntry.score && 
+      entry.comment === newEntry.comment && 
+      entry.date === newEntry.date
+    ) + 1;
+
+    if (callback) callback(newRank);
+    return;
+  }
+
+  const url = `${SUPABASE_URL}/rest/v1/ranking`;
   const payload = {
-    name: name || 'ハト',
+    name: (name || 'ハト').slice(0, 8),
     score: playerScore,
-    comment: comment || ''
+    comment: (comment || '').slice(0, 20)
   };
 
-  fetch(API_URL, {
+  fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
     },
     body: JSON.stringify(payload)
   })
     .then(response => {
-      if (!response.ok) throw new Error('API response error');
+      if (!response.ok) throw new Error('Supabase insert error');
       return response.json();
     })
-    .then(data => {
-      rankingData = data.ranking;
-      localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
-      if (callback) callback(data.rank);
+    .then(() => {
+      // Re-fetch updated scores to determine final player rank
+      loadRanking(() => {
+        const newRank = rankingData.findIndex(entry => 
+          entry.name === payload.name && 
+          entry.score === payload.score && 
+          entry.comment === payload.comment
+        ) + 1;
+        if (callback) callback(newRank || 100);
+      });
     })
     .catch(error => {
-      console.warn('Failed to submit ranking to server, using local fallback:', error);
+      console.warn('Failed to submit ranking to Supabase, using local fallback:', error);
       const dateStr = new Date().toLocaleDateString('ja-JP', {
         month: '2-digit',
         day: '2-digit'
