@@ -2098,7 +2098,7 @@ function resetGamePlay() {
 function checkCollisions() {
   // 1. Pigeon perching on wires/landmarks
   // Only check if falling and pressing W/Up
-  const landingKey = keys['ArrowUp'] || keys['KeyW'];
+  const landingKey = keys['ArrowUp'] || keys['KeyW'] || touchInput.up;
   if (landingKey && !pigeon.perchedOn && pigeon.vy > 0) {
     // Check telephone pole tops or lamp heads first
     for (let pole of landmarks) {
