@@ -252,8 +252,8 @@ class GameAudio {
 const audio = new GameAudio();
 
 // --- STATE MANAGEMENT & CONSTANTS ---
-const GAME_WIDTH = 960;
-const GAME_HEIGHT = 540;
+const GAME_WIDTH = 540;
+const GAME_HEIGHT = 960;
 
 const STATE = {
   MENU: 'menu',
@@ -370,8 +370,8 @@ let gameTime = 0;
 // Pigeon (Player) Definition
 class Pigeon {
   constructor() {
-    this.x = 200;
-    this.y = 200;
+    this.x = 120;
+    this.y = 350;
     this.vx = 0;
     this.vy = 0;
     this.radius = 20;
@@ -399,8 +399,8 @@ class Pigeon {
   }
 
   reset() {
-    this.x = 200;
-    this.y = 200;
+    this.x = 120;
+    this.y = 350;
     this.vx = 0;
     this.vy = 0;
     this.hurtTimer = 0;
@@ -797,7 +797,7 @@ class Landmark {
     this.x = x;
     this.type = type; // 'pole', 'lamp', 'sign'
     this.width = 40;
-    this.height = 180;
+    this.height = type === 'pole' ? 320 : 180;
     this.y = GAME_HEIGHT - 65 - this.height;
   }
 
@@ -1613,7 +1613,7 @@ function spawnSystems() {
       enemies.push(new Cat(GAME_WIDTH + 50));
     } else {
       // Crow heights: between top and powerline
-      const crowY = 50 + Math.random() * 200;
+      const crowY = 60 + Math.random() * 550;
       enemies.push(new Crow(GAME_WIDTH + 50, crowY));
     }
     nextSpawnTimers.enemy = 120 + Math.random() * 140 - (gameSpeed * 5); // Speeds up spawn
@@ -1624,7 +1624,7 @@ function spawnSystems() {
   if (nextSpawnTimers.collectible <= 0) {
     const isBean = Math.random() < 0.15; // 15% green bean
     // Random height in air or on ground/wire height
-    const itemY = 60 + Math.random() * 320;
+    const itemY = 80 + Math.random() * 650;
     collectibles.push(new Breadcrumb(GAME_WIDTH + 50, itemY, isBean));
     nextSpawnTimers.collectible = 60 + Math.random() * 90;
   }
@@ -1660,9 +1660,10 @@ function resetGamePlay() {
 
   pigeon.reset();
 
-  // Pre-spawn wires at two levels
-  wires.push(new Wire(GAME_HEIGHT - 65 - 180)); // main telephone line wire
-  wires.push(new Wire(GAME_HEIGHT - 65 - 110)); // lower lighting line wire
+  // Pre-spawn wires at three levels
+  wires.push(new Wire(GAME_HEIGHT - 65 - 180)); // lower wire
+  wires.push(new Wire(GAME_HEIGHT - 65 - 320)); // middle wire
+  wires.push(new Wire(GAME_HEIGHT - 65 - 460)); // upper wire
   
   // Initial spawn timers
   nextSpawnTimers = {
@@ -1852,7 +1853,7 @@ function drawCityscape() {
   
   for (let i = 0; i < 12; i++) {
     const w = 70 + (i % 3) * 30;
-    const h = 160 + (i % 4) * 50;
+    const h = 250 + (i % 4) * 110;
     const x = (i * 110 - scrollX * 0.5) % (GAME_WIDTH + w) - w;
     const y = GAME_HEIGHT - 65 - h;
     
@@ -1879,13 +1880,13 @@ function drawCityscape() {
   ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(towerX, GAME_HEIGHT - 65);
-  ctx.lineTo(towerX + 15, GAME_HEIGHT - 65 - 180);
+  ctx.lineTo(towerX + 15, GAME_HEIGHT - 65 - 300);
   ctx.lineTo(towerX + 30, GAME_HEIGHT - 65);
   ctx.stroke();
   ctx.fillStyle = '#ff4757'; // red indicator blink
   if (Math.floor(gameTime / 30) % 2 === 0) {
     ctx.beginPath();
-    ctx.arc(towerX + 15, GAME_HEIGHT - 65 - 182, 3, 0, Math.PI*2);
+    ctx.arc(towerX + 15, GAME_HEIGHT - 65 - 302, 3, 0, Math.PI*2);
     ctx.fill();
   }
 }
@@ -2299,8 +2300,8 @@ function gameLoop() {
     ctx.strokeStyle = '#1e272e';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(0, 220);
-    ctx.quadraticCurveTo(GAME_WIDTH / 2, 235, GAME_WIDTH, 220);
+    ctx.moveTo(0, 420);
+    ctx.quadraticCurveTo(GAME_WIDTH / 2, 435, GAME_WIDTH, 420);
     ctx.stroke();
     ctx.restore();
 
@@ -2308,7 +2309,7 @@ function gameLoop() {
     ctx.fillStyle = '#101726';
     for (let i = 0; i < 4; i++) {
       const bx = (i * 300 + gameTime * 0.4) % (GAME_WIDTH + 100) - 50;
-      const by = 80 + Math.sin((gameTime + i * 50) * 0.03) * 15;
+      const by = 180 + Math.sin((gameTime + i * 50) * 0.03) * 15;
       ctx.beginPath();
       // simple wings flap silhouette
       const wing = Math.sin(gameTime * 0.1 + i) * 6;
