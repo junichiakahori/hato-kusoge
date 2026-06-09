@@ -302,6 +302,14 @@ function saveGameData() {
   localStorage.setItem('hato_panic_data', JSON.stringify(gameData));
 }
 
+// Render.comにデプロイしたサーバーのURLをここに設定してください
+// （例: 'https://hato-kusoge-api.onrender.com/api/ranking'）
+const RENDER_API_URL = 'https://hato-kusoge-api.onrender.com/api/ranking';
+
+const API_URL = (location.hostname.includes('github.io'))
+  ? RENDER_API_URL
+  : '/api/ranking';
+
 let rankingData = [];
 
 function getInitialRanking() {
@@ -325,7 +333,7 @@ function getInitialRanking() {
 }
 
 function loadRanking(callback) {
-  fetch('/api/ranking')
+  fetch(API_URL)
     .then(response => {
       if (!response.ok) throw new Error('API response error');
       return response.json();
@@ -364,7 +372,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
     comment: comment || ''
   };
 
-  fetch('/api/ranking', {
+  fetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
