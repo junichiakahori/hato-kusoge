@@ -1290,6 +1290,26 @@ class Landmark {
       ctx.ellipse(this.x - 8, this.y - 14, 5, 3, 0, 0, Math.PI*2);
       ctx.fill();
 
+      // Conical streetlight cast downwards
+      const ambient = getAmbientState();
+      if (ambient.windowGlow > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        const coneAlpha = ambient.windowGlow * 0.15;
+        const grad = ctx.createLinearGradient(this.x - 8, this.y - 14, this.x - 8, GAME_HEIGHT - 65);
+        grad.addColorStop(0, `rgba(255, 234, 167, ${coneAlpha})`);
+        grad.addColorStop(1, 'rgba(255, 234, 167, 0)');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(this.x - 8, this.y - 14);
+        ctx.lineTo(this.x - 8 - 90, GAME_HEIGHT - 65);
+        ctx.lineTo(this.x - 8 + 90, GAME_HEIGHT - 65);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
     }
     ctx.restore();
   }
@@ -1303,7 +1323,23 @@ class Wire {
 
   draw() {
     ctx.save();
-    ctx.strokeStyle = '#1e272e';
+    const ambient = getAmbientState();
+    
+    // Adjust wire color depending on time of day
+    let wireColor = '#1e272e'; // dark during daytime
+    if (ambient.phaseName === 'Nighttime') {
+      wireColor = '#57606f'; // medium gray-blue
+      ctx.shadowColor = '#ffeaa7'; // warm streetlight reflection glow
+      ctx.shadowBlur = 3;
+    } else if (ambient.phaseName === 'Sunset') {
+      wireColor = '#3f3547'; // dark warm gray
+      ctx.shadowColor = '#ff7e5f'; // sunset orange reflection glow
+      ctx.shadowBlur = 2;
+    } else if (ambient.phaseName === 'Morning') {
+      wireColor = '#2e3540'; // dark bluish gray
+    }
+    
+    ctx.strokeStyle = wireColor;
     ctx.lineWidth = 1.5;
     
     // Draw wire sagging across the screen
