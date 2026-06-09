@@ -3357,7 +3357,7 @@ function gameLoop(timestamp) {
 
 // --- INIT APP ---
 function loadVersionInfo() {
-  fetch('version.json')
+  fetch(`version.json?t=${Date.now()}`)
     .then(response => {
       if (!response.ok) throw new Error('Failed to load version.json');
       return response.json();
