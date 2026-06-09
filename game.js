@@ -2200,9 +2200,7 @@ function checkCollisions() {
     }
   }
 
-  // If perching, bypass other collisions
-  if (pigeon.perchedOn) return;
-
+  if (!pigeon.perchedOn) {
   // 2. Pigeon eats breadcrumbs
   for (let i = collectibles.length - 1; i >= 0; i--) {
     const item = collectibles[i];
@@ -2267,6 +2265,7 @@ function checkCollisions() {
       pigeon.vy = -3;
       pigeon.vx = -4;
     }
+  }
   }
 
   // 4. Poop bullets hit targets on ground / enemies
