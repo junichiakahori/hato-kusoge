@@ -3,6 +3,55 @@
  * Core Game Script
  */
 
+// --- GLOBAL ERROR HANDLER FOR MOBILE/DESKTOP DEBBUGING ---
+window.addEventListener('error', function(e) {
+  const errDiv = document.createElement('div');
+  errDiv.style.position = 'absolute';
+  errDiv.style.top = '0';
+  errDiv.style.left = '0';
+  errDiv.style.width = '100%';
+  errDiv.style.padding = '15px';
+  errDiv.style.background = '#ff4757';
+  errDiv.style.color = 'white';
+  errDiv.style.fontFamily = 'monospace';
+  errDiv.style.fontSize = '12px';
+  errDiv.style.zIndex = '99999';
+  errDiv.style.boxSizing = 'border-box';
+  errDiv.innerHTML = '<strong>Game Error occurred:</strong><br>' + e.message + '<br>at ' + e.filename + ':' + e.lineno + ':' + e.colno;
+  document.body.appendChild(errDiv);
+});
+
+// --- CanvasRenderingContext2D.roundRect Polyfill ---
+if (typeof CanvasRenderingContext2D.prototype.roundRect !== 'function') {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (typeof r === 'undefined') {
+      r = 0;
+    }
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (Array.isArray(r)) {
+      if (r.length === 1) r = [r[0], r[0], r[0], r[0]];
+      else if (r.length === 2) r = [r[0], r[1], r[0], r[1]];
+      else if (r.length === 3) r = [r[0], r[1], r[2], r[1]];
+    } else {
+      r = [0, 0, 0, 0];
+    }
+    
+    this.beginPath();
+    this.moveTo(x + r[0], y);
+    this.lineTo(x + w - r[1], y);
+    this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+    this.lineTo(x + w, y + h - r[2]);
+    this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+    this.lineTo(x + r[3], y + h);
+    this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+    this.lineTo(x, y + r[0]);
+    this.quadraticCurveTo(x, y, x + r[0], y);
+    this.closePath();
+    return this;
+  };
+}
+
 // --- AUDIO SYNTHESIZER (Web Audio API) ---
 class GameAudio {
   constructor() {
@@ -2157,6 +2206,9 @@ function gameLoop() {
       lm.draw();
       // Remove offscreen
       if (lm.x < -100) {
+        if (pigeon.perchedOn === lm) {
+          pigeon.perchedOn = null;
+        }
         landmarks.splice(i, 1);
       }
     }
@@ -2207,7 +2259,7 @@ function gameLoop() {
       const p = particles[i];
       p.update();
       p.draw();
-      if (p.alpha <= 0 || p.life <= 0) {
+      if (p.alpha <= 0 || (p.life !== undefined && p.life <= 0)) {
         particles.splice(i, 1);
       }
     }
