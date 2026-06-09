@@ -3258,8 +3258,8 @@ function gameLoop(timestamp) {
       ctx.lineWidth = 12;
       ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-      // Center Warning Box
-      ctx.fillStyle = 'rgba(20, 5, 5, 0.9)';
+      // Center Warning Box (Transparent matching the HUD item design)
+      ctx.fillStyle = 'rgba(10, 15, 30, 0.45)';
       ctx.strokeStyle = '#ff4757';
       ctx.lineWidth = 3;
       
@@ -3271,18 +3271,21 @@ function gameLoop(timestamp) {
       ctx.fillRect(boxX, boxY, boxW, boxH);
       ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-      // Warning text flashing (Centered inside box)
+      // Warning text flashing (Centered inside box, outlined for legibility)
       if (Math.floor(gameTime / 12) % 2 === 0) {
         ctx.font = '900 28px var(--font-game)';
         ctx.fillStyle = '#ff4757';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'black';
-        ctx.shadowBlur = 6;
+        
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.strokeText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, boxY + 45);
         ctx.fillText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, boxY + 45);
         
         ctx.font = '800 11px var(--font-retro)';
         ctx.fillStyle = '#ffa502';
+        ctx.strokeText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, boxY + 95);
         ctx.fillText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, boxY + 95);
       }
       ctx.restore();
@@ -3299,8 +3302,8 @@ function gameLoop(timestamp) {
       ctx.fillStyle = 'rgba(255, 71, 87, 0.04)';
       ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-      // Swarm Active banner background (Just below HTML HUD gauges, around y = 190)
-      ctx.fillStyle = 'rgba(20, 5, 5, 0.85)';
+      // Swarm Active banner background (Just below HTML HUD gauges, transparent)
+      ctx.fillStyle = 'rgba(10, 15, 30, 0.45)';
       ctx.strokeStyle = '#ff4757';
       ctx.lineWidth = 2;
       
@@ -3318,8 +3321,10 @@ function gameLoop(timestamp) {
       ctx.fillStyle = '#ff4757';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'black';
-      ctx.shadowBlur = 4;
+      
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      ctx.strokeText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, GAME_WIDTH / 2, bannerY + bannerH / 2);
       ctx.fillText(`⚠️ カラス大群襲来中！ (あと ${remainingSec}秒) ⚠️`, GAME_WIDTH / 2, bannerY + bannerH / 2);
       ctx.restore();
     }
