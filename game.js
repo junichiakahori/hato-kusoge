@@ -275,6 +275,63 @@ class GameAudio {
       osc.stop(startTime + 0.18);
     }
   }
+
+  playCrow() {
+    if (this.muted || !this.ctx) return;
+    this.resume();
+
+    const now = this.ctx.currentTime;
+    // Play "caw-caw" (2 pulses)
+    this.synthCrowSound(now);
+    this.synthCrowSound(now + 0.55);
+  }
+
+  synthCrowSound(startTime) {
+    const duration = 0.35;
+    
+    // Stack 2 detuned sawtooth waves to get the raspy/hoarse texture
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc1.type = 'sawtooth';
+    osc2.type = 'sawtooth';
+
+    // Pitch sweep (starts high at 700Hz, slides down to 580Hz)
+    osc1.frequency.setValueAtTime(700, startTime);
+    osc1.frequency.exponentialRampToValueAtTime(580, startTime + duration);
+    
+    osc2.frequency.setValueAtTime(703, startTime);
+    osc2.frequency.exponentialRampToValueAtTime(582, startTime + duration);
+    
+    // Detune slightly to introduce phasing/roughness
+    osc1.detune.setValueAtTime(-12, startTime);
+    osc2.detune.setValueAtTime(12, startTime);
+
+    // Bandpass filter to isolate vocal midrange (makes it sound like a crow caw)
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(700, startTime);
+    filter.frequency.exponentialRampToValueAtTime(600, startTime + duration);
+    filter.Q.setValueAtTime(2.5, startTime);
+
+    // Volume envelope
+    gainNode.gain.setValueAtTime(0.01, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.12, startTime + 0.04);
+    gainNode.gain.linearRampToValueAtTime(0.08, startTime + duration * 0.65);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    // Node routing: Oscs -> Filter -> Gain -> Output
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+
+    osc1.start(startTime);
+    osc2.start(startTime);
+    osc1.stop(startTime + duration);
+    osc2.stop(startTime + duration);
+  }
 }
 
 const audio = new GameAudio();
@@ -2168,6 +2225,9 @@ function spawnSystems() {
         // Crow heights: between top and powerline
         const crowY = 60 + Math.random() * 550;
         enemies.push(new Crow(GAME_WIDTH + 50, crowY));
+        if (Math.random() < 0.5) {
+          audio.playCrow();
+        }
       }
       nextSpawnTimers.enemy = 120 + Math.random() * 140 - (gameSpeed * 5); // Speeds up spawn
     }
@@ -2205,6 +2265,7 @@ function updateEventSystem() {
       // Trigger warning phase
       eventWarningTimer = 180; // 3 seconds warning
       audio.playAlert();
+      audio.playCrow();
     }
   }
 
@@ -2242,6 +2303,7 @@ function updateEventSystem() {
 }
 
 function spawnSwarmWave() {
+  audio.playCrow();
   const patterns = ['wall', 'v-shape', 'wave', 'fast-scout'];
   const pattern = patterns[Math.floor(Math.random() * patterns.length)];
 
