@@ -2832,7 +2832,9 @@ function gameLoop() {
     checkCollisions();
 
     // 5. UPDATE SCORE & HUD
-    score++; // points passive survival
+    if (!pigeon.perchedOn) {
+      score++; // points passive survival (only when flying)
+    }
     updateHUD();
 
     // Draw foreground pavement
