@@ -3258,35 +3258,21 @@ function gameLoop(timestamp) {
       ctx.lineWidth = 12;
       ctx.strokeRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-      // Center Warning Box (Transparent matching the HUD item design)
-      ctx.fillStyle = 'rgba(10, 15, 30, 0.45)';
-      ctx.strokeStyle = '#ff4757';
-      ctx.lineWidth = 3;
-      
-      const boxW = 480;
-      const boxH = 140;
-      const boxX = (GAME_WIDTH - boxW) / 2;
-      const boxY = GAME_HEIGHT / 2 - boxH / 2 - 40; // centered in action area
-      
-      ctx.fillRect(boxX, boxY, boxW, boxH);
-      ctx.strokeRect(boxX, boxY, boxW, boxH);
-
-      // Warning text flashing (Centered inside box, outlined for legibility)
+      // Warning text flashing (Positioned just below the HUD to avoid blocking the player)
       if (Math.floor(gameTime / 12) % 2 === 0) {
-        ctx.font = '900 28px var(--font-game)';
+        ctx.font = '900 26px var(--font-game)';
         ctx.fillStyle = '#ff4757';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
         
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 4;
-        ctx.strokeText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, boxY + 45);
-        ctx.fillText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, boxY + 45);
+        ctx.strokeText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, 260);
+        ctx.fillText('⚠️ カラスの大群 接近中！ ⚠️', GAME_WIDTH / 2, 260);
         
         ctx.font = '800 11px var(--font-retro)';
         ctx.fillStyle = '#ffa502';
-        ctx.strokeText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, boxY + 95);
-        ctx.fillText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, boxY + 95);
+        ctx.strokeText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, 295);
+        ctx.fillText('DANGER! CROW SWARM INCOMING!', GAME_WIDTH / 2, 295);
       }
       ctx.restore();
     }
