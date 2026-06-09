@@ -112,8 +112,8 @@ class GameAudio {
     
     osc.type = 'sine';
     osc.frequency.setValueAtTime(startFreq, startTime);
-    osc.frequency.quadraticRampToValueAtTime(endFreq, startTime + duration * 0.5);
-    osc.frequency.quadraticRampToValueAtTime(startFreq - 10, startTime + duration);
+    osc.frequency.linearRampToValueAtTime(endFreq, startTime + duration * 0.5);
+    osc.frequency.linearRampToValueAtTime(startFreq - 10, startTime + duration);
     
     gain.gain.setValueAtTime(0.01, startTime);
     gain.gain.linearRampToValueAtTime(0.15, startTime + duration * 0.2);
