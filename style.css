@@ -868,6 +868,17 @@ body, html {
   opacity: 0.8;
 }
 
+.menu-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+.menu-footer a:hover {
+  color: var(--secondary-color);
+  text-shadow: 0 0 5px rgba(0, 242, 254, 0.4);
+}
+
 .copyright-label {
   font-weight: 600;
   color: var(--text-color);
