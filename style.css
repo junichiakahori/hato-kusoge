@@ -713,18 +713,11 @@ body, html {
   left: 0;
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
   padding: 16px 20px 24px 20px;
   z-index: 15;
   pointer-events: none;
-}
-
-.mobile-dpad {
-  position: relative;
-  width: 112px;
-  height: 112px;
-  pointer-events: auto;
 }
 
 .mobile-group-right {
@@ -750,11 +743,6 @@ body, html {
   cursor: pointer;
   transition: background-color 0.05s, transform 0.05s;
 }
-
-.dpad-up { position: absolute; top: 0; left: 37px; }
-.dpad-left { position: absolute; top: 37px; left: 0; }
-.dpad-right { position: absolute; top: 37px; right: 0; }
-.dpad-down { position: absolute; bottom: 0; left: 37px; }
 
 .ctrl-btn:active {
   background: var(--primary-color);

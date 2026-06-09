@@ -313,6 +313,18 @@ canvas.height = GAME_HEIGHT;
 const keys = {};
 let touchInput = { left: false, right: false, up: false, down: false, flap: false, poop: false };
 
+// Dynamic virtual joystick state
+const joystick = {
+  active: false,
+  touchId: null,
+  startX: 0,
+  startY: 0,
+  currentX: 0,
+  currentY: 0,
+  maxRadius: 55, // canvas units
+  deadzone: 8    // canvas units
+};
+
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
   audio.init(); // Init audio on key press
@@ -324,12 +336,8 @@ window.addEventListener('keyup', (e) => {
   keys[e.code] = false;
 });
 
-// Setup Mobile Touch Events
+// Setup Mobile Touch Events & Dynamic Virtual Joystick
 const setupMobileControls = () => {
-  const btnLeft = document.getElementById('ctrl-left');
-  const btnRight = document.getElementById('ctrl-right');
-  const btnUp = document.getElementById('ctrl-up');
-  const btnDown = document.getElementById('ctrl-down');
   const btnFlap = document.getElementById('ctrl-flap');
   const btnPoop = document.getElementById('ctrl-poop');
 
@@ -354,12 +362,174 @@ const setupMobileControls = () => {
     });
   };
 
-  setupButton(btnLeft, 'left');
-  setupButton(btnRight, 'right');
-  setupButton(btnUp, 'up');
-  setupButton(btnDown, 'down');
   setupButton(btnFlap, 'flap');
   setupButton(btnPoop, 'poop');
+
+  // --- Dynamic Virtual Joystick Event Listeners ---
+  canvas.addEventListener('touchstart', (e) => {
+    if (currentGameState !== STATE.PLAYING) return;
+    if (joystick.active) return;
+
+    const rect = canvas.getBoundingClientRect();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      const cssX = touch.clientX - rect.left;
+      const cssY = touch.clientY - rect.top;
+
+      const canvasX = (cssX / rect.width) * canvas.width;
+      const canvasY = (cssY / rect.height) * canvas.height;
+
+      // Only activate if touched on the left half of the screen
+      if (canvasX < canvas.width / 2) {
+        joystick.active = true;
+        joystick.touchId = touch.identifier;
+        joystick.startX = canvasX;
+        joystick.startY = canvasY;
+        joystick.currentX = canvasX;
+        joystick.currentY = canvasY;
+        audio.init();
+        break;
+      }
+    }
+  }, { passive: true });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!joystick.active) return;
+
+    const rect = canvas.getBoundingClientRect();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      if (touch.identifier === joystick.touchId) {
+        if (e.cancelable) e.preventDefault();
+
+        const cssX = touch.clientX - rect.left;
+        const cssY = touch.clientY - rect.top;
+
+        const canvasX = (cssX / rect.width) * canvas.width;
+        const canvasY = (cssY / rect.height) * canvas.height;
+
+        let dx = canvasX - joystick.startX;
+        let dy = canvasY - joystick.startY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > joystick.maxRadius) {
+          dx = (dx / dist) * joystick.maxRadius;
+          dy = (dy / dist) * joystick.maxRadius;
+        }
+
+        joystick.currentX = joystick.startX + dx;
+        joystick.currentY = joystick.startY + dy;
+
+        // Reset direction outputs
+        touchInput.left = false;
+        touchInput.right = false;
+        touchInput.up = false;
+        touchInput.down = false;
+
+        if (dist > joystick.deadzone) {
+          const threshold = 12;
+          if (dx < -threshold) touchInput.left = true;
+          if (dx > threshold) touchInput.right = true;
+          if (dy < -threshold) touchInput.up = true;
+          if (dy > threshold) touchInput.down = true;
+        }
+        break;
+      }
+    }
+  }, { passive: false });
+
+  const endJoystick = (e) => {
+    if (!joystick.active) return;
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      if (touch.identifier === joystick.touchId) {
+        joystick.active = false;
+        joystick.touchId = null;
+        touchInput.left = false;
+        touchInput.right = false;
+        touchInput.up = false;
+        touchInput.down = false;
+        break;
+      }
+    }
+  };
+
+  canvas.addEventListener('touchend', endJoystick, { passive: true });
+  canvas.addEventListener('touchcancel', endJoystick, { passive: true });
+
+  // --- Mouse emulation of the virtual joystick (for desktop testing) ---
+  let isMouseDragging = false;
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (currentGameState !== STATE.PLAYING) return;
+    if (e.button !== 0) return; // Left click only
+
+    const rect = canvas.getBoundingClientRect();
+    const cssX = e.clientX - rect.left;
+    const cssY = e.clientY - rect.top;
+
+    const canvasX = (cssX / rect.width) * canvas.width;
+    const canvasY = (cssY / rect.height) * canvas.height;
+
+    // Only activate on left half
+    if (canvasX < canvas.width / 2) {
+      isMouseDragging = true;
+      joystick.active = true;
+      joystick.startX = canvasX;
+      joystick.startY = canvasY;
+      joystick.currentX = canvasX;
+      joystick.currentY = canvasY;
+      audio.init();
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isMouseDragging || !joystick.active) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const cssX = e.clientX - rect.left;
+    const cssY = e.clientY - rect.top;
+
+    const canvasX = (cssX / rect.width) * canvas.width;
+    const canvasY = (cssY / rect.height) * canvas.height;
+
+    let dx = canvasX - joystick.startX;
+    let dy = canvasY - joystick.startY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > joystick.maxRadius) {
+      dx = (dx / dist) * joystick.maxRadius;
+      dy = (dy / dist) * joystick.maxRadius;
+    }
+
+    joystick.currentX = joystick.startX + dx;
+    joystick.currentY = joystick.startY + dy;
+
+    touchInput.left = false;
+    touchInput.right = false;
+    touchInput.up = false;
+    touchInput.down = false;
+
+    if (dist > joystick.deadzone) {
+      const threshold = 12;
+      if (dx < -threshold) touchInput.left = true;
+      if (dx > threshold) touchInput.right = true;
+      if (dy < -threshold) touchInput.up = true;
+      if (dy > threshold) touchInput.down = true;
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isMouseDragging) {
+      isMouseDragging = false;
+      joystick.active = false;
+      touchInput.left = false;
+      touchInput.right = false;
+      touchInput.up = false;
+      touchInput.down = false;
+    }
+  });
 };
 
 // --- GAME OBJECTS & SYSTEMS ---
@@ -1932,6 +2102,44 @@ function drawForegroundCity() {
   ctx.setLineDash([]); // clear dash
 }
 
+function drawJoystick() {
+  if (!joystick.active) return;
+
+  ctx.save();
+
+  // Draw base (outer ring)
+  ctx.beginPath();
+  ctx.arc(joystick.startX, joystick.startY, joystick.maxRadius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(22, 26, 37, 0.55)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Draw crosshair indicators (faint)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(joystick.startX - joystick.maxRadius, joystick.startY);
+  ctx.lineTo(joystick.startX + joystick.maxRadius, joystick.startY);
+  ctx.moveTo(joystick.startX, joystick.startY - joystick.maxRadius);
+  ctx.lineTo(joystick.startX, joystick.startY + joystick.maxRadius);
+  ctx.stroke();
+
+  // Draw stick (inner knob) with neon glow
+  ctx.beginPath();
+  ctx.arc(joystick.currentX, joystick.currentY, 20, 0, Math.PI * 2);
+  ctx.shadowColor = '#00f2fe';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = 'rgba(0, 242, 254, 0.6)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0, 242, 254, 0.95)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 // --- STATE UPDATES & GUI MENUS ---
 function updateHUD() {
   const scoreEl = document.getElementById('hud-score');
@@ -2305,6 +2513,9 @@ function gameLoop() {
 
     // Draw foreground pavement
     drawForegroundCity();
+    
+    // Draw virtual touch joystick
+    drawJoystick();
 
   } else {
     // MENU OR SHOP RENDERING - Draw nice animated background screen on canvas
