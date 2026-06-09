@@ -114,7 +114,7 @@ body, html {
 .hud-top-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
@@ -125,15 +125,21 @@ body, html {
   width: 100%;
 }
 
+.hud-middle {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
 .hud-item {
   background: rgba(10, 15, 30, 0.6);
   border: 1px solid var(--panel-border);
   backdrop-filter: blur(4px);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 20px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .hud-label {
@@ -154,8 +160,9 @@ body, html {
   color: var(--danger-color);
   text-shadow: 0 0 5px rgba(255, 71, 87, 0.6);
   font-family: Arial, sans-serif;
-  font-size: 11px;
-  letter-spacing: 1px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  white-space: nowrap; /* Prevent hearts wrapping vertically */
 }
 
 .crumbs-container .hud-value {
