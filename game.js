@@ -3086,7 +3086,7 @@ function showGameOverScreen() {
     const registerBox = document.getElementById('ranking-register-box');
     const commentInput = document.getElementById('player-comment-input');
     if (isQualified) {
-      document.getElementById('player-name-input').value = '';
+      document.getElementById('player-name-input').value = gameData.registeredName || '';
       if (commentInput) commentInput.value = '';
       if (registerBox) registerBox.classList.remove('hidden');
     } else {
