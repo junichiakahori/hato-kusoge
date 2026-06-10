@@ -2579,6 +2579,7 @@ function resetGamePlay() {
 
 // --- COLLISION LOGIC ---
 function checkCollisions() {
+  if (pigeon.isDead) return;
   // 1. Pigeon perching on wires/landmarks
   const landingKey = keys['ArrowUp'] || keys['KeyW'] || touchInput.up;
   if (landingKey && !pigeon.perchedOn) {
@@ -3517,7 +3518,7 @@ function gameLoop(timestamp) {
     checkCollisions();
 
     // 5. UPDATE SCORE & HUD
-    if (!pigeon.perchedOn) {
+    if (!pigeon.perchedOn && currentGameState === STATE.PLAYING) {
       score++; // points passive survival (only when flying)
     }
     updateHUD();
