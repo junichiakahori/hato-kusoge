@@ -598,7 +598,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
     }).replace(/\//g, '/');
 
     const newEntry = {
-      name: (name || 'ハト').slice(0, 8),
+      name: (name || '名無しのハト').slice(0, 8),
       score: playerScore,
       comment: (comment || '').slice(0, 20),
       date: dateStr
@@ -622,7 +622,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
 
   const url = `${SUPABASE_BASE_URL}/rest/v1/ranking`;
   const payload = {
-    name: (name || 'ハト').slice(0, 8),
+    name: (name || '名無しのハト').slice(0, 8),
     score: playerScore,
     comment: (comment || '').slice(0, 20)
   };
@@ -660,7 +660,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
       }).replace(/\//g, '/');
 
       const newEntry = {
-        name: (name || 'ハト').slice(0, 8),
+        name: (name || '名無しのハト').slice(0, 8),
         score: playerScore,
         comment: (comment || '').slice(0, 20),
         date: dateStr
@@ -3314,7 +3314,7 @@ function setupUIEvents() {
       audio.init();
       const nameInput = document.getElementById('player-name-input');
       const commentInput = document.getElementById('player-comment-input');
-      const playerName = (nameInput ? nameInput.value.trim() : '') || 'ハト';
+      const playerName = (nameInput ? nameInput.value.trim() : '') || '名無しのハト';
       const playerComment = commentInput ? commentInput.value.trim() : '';
 
       // Disable button during submission to prevent duplicate clicks

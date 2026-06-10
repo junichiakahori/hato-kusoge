@@ -90,7 +90,7 @@ const server = http.createServer((req, res) => {
         }).replace(/\//g, '/'); // e.g. 06/09
 
         const newEntry = {
-          name: (name || 'ハト').slice(0, 8),
+          name: (name || '名無しのハト').slice(0, 8),
           score: score,
           comment: (comment || '').slice(0, 20),
           date: dateStr
