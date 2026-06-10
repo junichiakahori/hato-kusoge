@@ -757,7 +757,7 @@ function populateLeaderboard(highlightRank = -1) {
       <td>${rankDisplay}</td>
       <td>${escapeHTML(entry.name)}</td>
       <td>${entry.score}</td>
-      <td style="max-width: 200px; word-break: break-all; white-space: normal; text-align: left;">${escapeHTML(entry.comment || '')}</td>
+      <td style="min-width: 160px; white-space: nowrap; text-align: left;">${escapeHTML(entry.comment || '')}</td>
       <td>${entry.date}</td>
     `;
     tbody.appendChild(tr);
