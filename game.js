@@ -465,6 +465,7 @@ let gameData = {
   highScore: 0,
   activeSkin: 'normal',
   unlockedSkins: ['normal'],
+  registeredName: '',
   upgrades: {
     stamina: 1, // Max stamina multiplier
     poop: 1,    // Max poop ammo
@@ -592,9 +593,16 @@ function checkRankingQualification(playerScore) {
 function registerRankingScore(name, playerScore, comment, callback) {
   const sanitizedName = (name && name.trim()) ? name.trim().slice(0, 8) : ('ハト#' + Math.floor(1000 + Math.random() * 9000));
   
-  const existingEntry = rankingData.find(entry => entry.name === sanitizedName);
+  // Track previous name from local storage to handle name changes
+  const previousName = gameData.registeredName;
+  const targetOldName = previousName || sanitizedName;
+
+  const existingEntry = rankingData.find(entry => entry.name === targetOldName);
   if (existingEntry && playerScore <= existingEntry.score) {
-    if (callback) callback(rankingData.findIndex(entry => entry.name === sanitizedName) + 1);
+    // Keep their registered name synchronized to the leaderboard entry
+    gameData.registeredName = existingEntry.name;
+    saveGameData();
+    if (callback) callback(rankingData.findIndex(entry => entry.name === existingEntry.name) + 1);
     return;
   }
 
@@ -605,8 +613,9 @@ function registerRankingScore(name, playerScore, comment, callback) {
       day: '2-digit'
     }).replace(/\//g, '/');
 
-    const existingIndex = rankingData.findIndex(entry => entry.name === sanitizedName);
+    const existingIndex = rankingData.findIndex(entry => entry.name === targetOldName);
     if (existingIndex !== -1) {
+      rankingData[existingIndex].name = sanitizedName;
       rankingData[existingIndex].score = playerScore;
       rankingData[existingIndex].comment = (comment || '').slice(0, 20);
       rankingData[existingIndex].date = dateStr;
@@ -624,6 +633,10 @@ function registerRankingScore(name, playerScore, comment, callback) {
     rankingData = rankingData.slice(0, 100);
     localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
 
+    // Save newly registered name to gameData
+    gameData.registeredName = sanitizedName;
+    saveGameData();
+
     const newRank = rankingData.findIndex(entry => entry.name === sanitizedName) + 1;
     if (callback) callback(newRank);
     return;
@@ -636,10 +649,10 @@ function registerRankingScore(name, playerScore, comment, callback) {
     comment: (comment || '').slice(0, 20)
   };
 
-  // If there's an existing entry in the top 100, delete it first to overwrite it
-  const isExisting = rankingData.some(entry => entry.name === sanitizedName);
+  // If there's an existing entry on the leaderboard, delete it first to overwrite it
+  const isExisting = rankingData.some(entry => entry.name === targetOldName);
   const deletePromise = isExisting 
-    ? fetch(`${SUPABASE_BASE_URL}/rest/v1/ranking?name=eq.${encodeURIComponent(sanitizedName)}`, {
+    ? fetch(`${SUPABASE_BASE_URL}/rest/v1/ranking?name=eq.${encodeURIComponent(targetOldName)}`, {
         method: 'DELETE',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -666,6 +679,10 @@ function registerRankingScore(name, playerScore, comment, callback) {
       return response.json();
     })
     .then(() => {
+      // Save newly registered name to gameData
+      gameData.registeredName = sanitizedName;
+      saveGameData();
+
       // Re-fetch updated scores to determine final player rank
       loadRanking(() => {
         const newRank = rankingData.findIndex(entry => 
@@ -683,8 +700,9 @@ function registerRankingScore(name, playerScore, comment, callback) {
         day: '2-digit'
       }).replace(/\//g, '/');
 
-      const existingIndex = rankingData.findIndex(entry => entry.name === sanitizedName);
+      const existingIndex = rankingData.findIndex(entry => entry.name === targetOldName);
       if (existingIndex !== -1) {
+        rankingData[existingIndex].name = sanitizedName;
         rankingData[existingIndex].score = playerScore;
         rankingData[existingIndex].comment = (comment || '').slice(0, 20);
         rankingData[existingIndex].date = dateStr;
@@ -701,6 +719,10 @@ function registerRankingScore(name, playerScore, comment, callback) {
       rankingData.sort((a, b) => b.score - a.score);
       rankingData = rankingData.slice(0, 100);
       localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
+
+      // Save newly registered name to gameData
+      gameData.registeredName = sanitizedName;
+      saveGameData();
 
       const newRank = rankingData.findIndex(entry => entry.name === sanitizedName) + 1;
       if (callback) callback(newRank);

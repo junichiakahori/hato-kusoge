@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const payload = JSON.parse(body);
-        const { name, score, comment } = payload;
+        const { name, score, comment, previousName } = payload;
         
         if (typeof score !== 'number') {
           res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -97,9 +97,11 @@ const server = http.createServer((req, res) => {
         };
 
         let ranking = readRanking();
-        const existingIndex = ranking.findIndex(entry => entry.name === newEntry.name);
+        const targetOldName = previousName || newEntry.name;
+        const existingIndex = ranking.findIndex(entry => entry.name === targetOldName);
         if (existingIndex !== -1) {
           if (newEntry.score > ranking[existingIndex].score) {
+            ranking[existingIndex].name = newEntry.name;
             ranking[existingIndex].score = newEntry.score;
             ranking[existingIndex].comment = newEntry.comment;
             ranking[existingIndex].date = newEntry.date;
