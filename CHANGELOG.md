@@ -1,5 +1,17 @@
 # 🕊️ ハトの糞ゲー (PIGEON CRAP GAME) - 変更履歴 (CHANGELOG)
 
+### v1.5.1 (2026/06/11 04:51)
+- **SEO・SNS対応**
+  - OGP（Open Graph Protocol）メタタグを追加。X（Twitter）・LINE等でシェアした際にサムネイル画像・タイトル・説明文が表示されるよう対応。
+  - Twitter Card（`summary_large_image`）対応。
+  - `canonical` タグ追加でGoogle検索の正規URLを明示。
+  - Schema.org の `VideoGame` 構造化データを追加。Google検索でのゲーム情報リッチ表示に対応。
+  - `sitemap.xml` を新規作成。Googleクローラーへのページ通知を強化。
+  - `robots.txt` を新規作成。クロール許可とサイトマップURLを明示。
+  - SNSシェア用サムネイル画像（`og-image.png`、1200×630）を追加。
+
+---
+
 ### v1.5.0 (2026/06/10 11:58)
 - **UI改善**
   - ランキング一覧のコメント列を省略（`text-overflow: ellipsis`）から全文折り返し表示（`word-break: break-all`）に変更。20文字のコメントがスマートフォン画面でも正しく全て表示されるよう改善。
