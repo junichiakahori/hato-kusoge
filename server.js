@@ -97,17 +97,21 @@ const server = http.createServer((req, res) => {
         };
 
         let ranking = readRanking();
-        ranking.push(newEntry);
+        const existingIndex = ranking.findIndex(entry => entry.name === newEntry.name);
+        if (existingIndex !== -1) {
+          if (newEntry.score > ranking[existingIndex].score) {
+            ranking[existingIndex].score = newEntry.score;
+            ranking[existingIndex].comment = newEntry.comment;
+            ranking[existingIndex].date = newEntry.date;
+          }
+        } else {
+          ranking.push(newEntry);
+        }
         ranking.sort((a, b) => b.score - a.score);
         ranking = ranking.slice(0, 100);
         writeRanking(ranking);
 
-        const newRank = ranking.findIndex(entry => 
-          entry.name === newEntry.name && 
-          entry.score === newEntry.score && 
-          entry.comment === newEntry.comment && 
-          entry.date === newEntry.date
-        ) + 1;
+        const newRank = ranking.findIndex(entry => entry.name === newEntry.name) + 1;
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ranking, rank: newRank }));

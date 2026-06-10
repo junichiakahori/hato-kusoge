@@ -591,6 +591,13 @@ function checkRankingQualification(playerScore) {
 
 function registerRankingScore(name, playerScore, comment, callback) {
   const sanitizedName = (name && name.trim()) ? name.trim().slice(0, 8) : ('ハト#' + Math.floor(1000 + Math.random() * 9000));
+  
+  const existingEntry = rankingData.find(entry => entry.name === sanitizedName);
+  if (existingEntry && playerScore <= existingEntry.score) {
+    if (callback) callback(rankingData.findIndex(entry => entry.name === sanitizedName) + 1);
+    return;
+  }
+
   if (!isSupabaseConfigured) {
     // LocalStorage Fallback mode
     const dateStr = new Date().toLocaleDateString('ja-JP', {
@@ -598,46 +605,62 @@ function registerRankingScore(name, playerScore, comment, callback) {
       day: '2-digit'
     }).replace(/\//g, '/');
 
-    const newEntry = {
-      name: sanitizedName,
-      score: playerScore,
-      comment: (comment || '').slice(0, 20),
-      date: dateStr
-    };
+    const existingIndex = rankingData.findIndex(entry => entry.name === sanitizedName);
+    if (existingIndex !== -1) {
+      rankingData[existingIndex].score = playerScore;
+      rankingData[existingIndex].comment = (comment || '').slice(0, 20);
+      rankingData[existingIndex].date = dateStr;
+    } else {
+      const newEntry = {
+        name: sanitizedName,
+        score: playerScore,
+        comment: (comment || '').slice(0, 20),
+        date: dateStr
+      };
+      rankingData.push(newEntry);
+    }
 
-    rankingData.push(newEntry);
     rankingData.sort((a, b) => b.score - a.score);
     rankingData = rankingData.slice(0, 100);
     localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
 
-    const newRank = rankingData.findIndex(entry => 
-      entry.name === newEntry.name && 
-      entry.score === newEntry.score && 
-      entry.comment === newEntry.comment && 
-      entry.date === newEntry.date
-    ) + 1;
-
+    const newRank = rankingData.findIndex(entry => entry.name === sanitizedName) + 1;
     if (callback) callback(newRank);
     return;
   }
 
-  const url = `${SUPABASE_BASE_URL}/rest/v1/ranking`;
+  const postUrl = `${SUPABASE_BASE_URL}/rest/v1/ranking`;
   const payload = {
     name: sanitizedName,
     score: playerScore,
     comment: (comment || '').slice(0, 20)
   };
 
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(payload)
-  })
+  // If there's an existing entry in the top 100, delete it first to overwrite it
+  const isExisting = rankingData.some(entry => entry.name === sanitizedName);
+  const deletePromise = isExisting 
+    ? fetch(`${SUPABASE_BASE_URL}/rest/v1/ranking?name=eq.${encodeURIComponent(sanitizedName)}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        }
+      })
+    : Promise.resolve();
+
+  deletePromise
+    .then(() => {
+      return fetch(postUrl, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(payload)
+      });
+    })
     .then(response => {
       if (!response.ok) throw new Error('Supabase insert error');
       return response.json();
@@ -660,25 +683,26 @@ function registerRankingScore(name, playerScore, comment, callback) {
         day: '2-digit'
       }).replace(/\//g, '/');
 
-      const newEntry = {
-        name: sanitizedName,
-        score: playerScore,
-        comment: (comment || '').slice(0, 20),
-        date: dateStr
-      };
+      const existingIndex = rankingData.findIndex(entry => entry.name === sanitizedName);
+      if (existingIndex !== -1) {
+        rankingData[existingIndex].score = playerScore;
+        rankingData[existingIndex].comment = (comment || '').slice(0, 20);
+        rankingData[existingIndex].date = dateStr;
+      } else {
+        const newEntry = {
+          name: sanitizedName,
+          score: playerScore,
+          comment: (comment || '').slice(0, 20),
+          date: dateStr
+        };
+        rankingData.push(newEntry);
+      }
 
-      rankingData.push(newEntry);
       rankingData.sort((a, b) => b.score - a.score);
       rankingData = rankingData.slice(0, 100);
       localStorage.setItem('hato_ranking_data', JSON.stringify(rankingData));
 
-      const newRank = rankingData.findIndex(entry => 
-        entry.name === newEntry.name && 
-        entry.score === newEntry.score && 
-        entry.comment === newEntry.comment && 
-        entry.date === newEntry.date
-      ) + 1;
-
+      const newRank = rankingData.findIndex(entry => entry.name === sanitizedName) + 1;
       if (callback) callback(newRank);
     });
 }
