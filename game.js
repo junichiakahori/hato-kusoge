@@ -710,7 +710,7 @@ function populateLeaderboard(highlightRank = -1) {
       <td>${rankDisplay}</td>
       <td>${escapeHTML(entry.name)}</td>
       <td>${entry.score}</td>
-      <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(entry.comment || '')}">${escapeHTML(entry.comment || '')}</td>
+      <td style="max-width: 120px; white-space: normal; word-break: break-all; line-height: 1.2;" title="${escapeHTML(entry.comment || '')}">${formatComment(entry.comment || '')}</td>
       <td>${entry.date}</td>
     `;
     tbody.appendChild(tr);
@@ -721,6 +721,12 @@ function populateLeaderboard(highlightRank = -1) {
       }, 100);
     }
   });
+}
+
+function formatComment(comment) {
+  if (!comment) return '';
+  if (comment.length <= 10) return escapeHTML(comment);
+  return escapeHTML(comment.slice(0, 10)) + '<br>' + escapeHTML(comment.slice(10, 20));
 }
 
 function escapeHTML(str) {

@@ -60,7 +60,36 @@ node server.js
 
 ---
 
+## 🌐 オンラインランキング (Supabase) の設定
+
+このゲームは、**Supabase** を使用して世界中のプレイヤーとスコアを競えるグローバルランキング機能に対応しています。デフォルトで動作する設定になっていますが、独自のリポジトリやDBに切り替える場合は以下の手順で行います。
+
+### 1. クライアント側の接続設定
+[game.js](file:///Users/junichiakahori/Documents/Antigravity/hato-kusoge/game.js) 内の以下の定数をご自身のSupabaseプロジェクトのものに書き換えます。
+
+```javascript
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_KEY = 'your-anon-public-key';
+```
+
+### 2. Supabase データベースのテーブル構成
+Supabase上で、以下の構成で `ranking` テーブルを作成してください。
+
+* **テーブル名**: `ranking`
+* **RLS (Row Level Security)**: 必要に応じて `select` (読み取り) および `insert` (書き込み) のポリシーを許可してください。
+* **カラム定義**:
+  | カラム名 | データ型 | 説明 |
+  | :--- | :--- | :--- |
+  | `id` | int8 (Identity / Primary Key) | 自動インクリメントID |
+  | `name` | text | プレイヤー名 (最大8文字) |
+  | `score` | int8 | スコア |
+  | `comment` | text | 一言コメント (最大20文字) |
+  | `created_at` | timestamptz | 登録日時 (デフォルト値: `now()`) |
+
+---
+
 ## 📂 ファイル構成
 * `index.html` - UI、HUD、ショップメニュー、モバイルコントローラーの構造
 * `style.css` - レトロアーケード風のネオン・ダークテーマスタイル
 * `game.js` - メインのゲームループ、物理演算、描画、シンセサイザー、セーブデータ管理
+* `server.js` - ローカル実行用のスコア保存API搭載Node.jsサーバー
