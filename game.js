@@ -590,6 +590,7 @@ function checkRankingQualification(playerScore) {
 }
 
 function registerRankingScore(name, playerScore, comment, callback) {
+  const sanitizedName = (name && name.trim()) ? name.trim().slice(0, 8) : ('ハト#' + Math.floor(1000 + Math.random() * 9000));
   if (!isSupabaseConfigured) {
     // LocalStorage Fallback mode
     const dateStr = new Date().toLocaleDateString('ja-JP', {
@@ -598,7 +599,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
     }).replace(/\//g, '/');
 
     const newEntry = {
-      name: (name || '名無しのハト').slice(0, 8),
+      name: sanitizedName,
       score: playerScore,
       comment: (comment || '').slice(0, 20),
       date: dateStr
@@ -622,7 +623,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
 
   const url = `${SUPABASE_BASE_URL}/rest/v1/ranking`;
   const payload = {
-    name: (name || '名無しのハト').slice(0, 8),
+    name: sanitizedName,
     score: playerScore,
     comment: (comment || '').slice(0, 20)
   };
@@ -660,7 +661,7 @@ function registerRankingScore(name, playerScore, comment, callback) {
       }).replace(/\//g, '/');
 
       const newEntry = {
-        name: (name || '名無しのハト').slice(0, 8),
+        name: sanitizedName,
         score: playerScore,
         comment: (comment || '').slice(0, 20),
         date: dateStr
@@ -3314,7 +3315,7 @@ function setupUIEvents() {
       audio.init();
       const nameInput = document.getElementById('player-name-input');
       const commentInput = document.getElementById('player-comment-input');
-      const playerName = (nameInput ? nameInput.value.trim() : '') || '名無しのハト';
+      const playerName = (nameInput ? nameInput.value.trim() : '') || ('ハト#' + Math.floor(1000 + Math.random() * 9000));
       const playerComment = commentInput ? commentInput.value.trim() : '';
 
       // Disable button during submission to prevent duplicate clicks
