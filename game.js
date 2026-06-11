@@ -54,10 +54,13 @@ if (typeof CanvasRenderingContext2D.prototype.roundRect !== 'function') {
 
 // --- AUDIO SYNTHESIZER (Web Audio API) ---
 class GameAudio {
+  static get BGM_VOLUME() { return 0.03; }
+
   constructor() {
     this.ctx = null;
-    this.muted = false;
     this.bgm = null;
+    this.bgmGain = null;
+    this.bgmConnected = false;
     this.bgmFadeInterval = null;
   }
 
@@ -65,13 +68,28 @@ class GameAudio {
     if (this.bgm) return;
     this.bgm = new Audio('bgm.mp3');
     this.bgm.loop = true;
-    this.bgm.volume = 0.03;
+  }
+
+  connectBGMToWebAudio() {
+    // Web Audio API の GainNode 経由で音量制御（iOS の volume 読み取り専用制限を回避）
+    if (!this.ctx || this.bgmConnected) return;
+    try {
+      this.bgmSource = this.ctx.createMediaElementSource(this.bgm);
+      this.bgmGain = this.ctx.createGain();
+      this.bgmGain.gain.value = GameAudio.BGM_VOLUME;
+      this.bgmSource.connect(this.bgmGain);
+      this.bgmGain.connect(this.ctx.destination);
+      this.bgmConnected = true;
+    } catch (e) {
+      this.bgm.volume = GameAudio.BGM_VOLUME; // フォールバック
+    }
   }
 
   playBGM() {
     this.initBGM();
     if (this.muted) return;
-    this.bgm.volume = 0.03;
+    this.connectBGMToWebAudio();
+    if (!this.bgmConnected) this.bgm.volume = GameAudio.BGM_VOLUME;
     if (this.bgm.paused) {
       this.bgm.currentTime = 0;
       this.bgm.play().catch(() => {});
@@ -81,23 +99,38 @@ class GameAudio {
   stopBGM(fade = false) {
     if (!this.bgm) return;
     if (this.bgmFadeInterval) clearInterval(this.bgmFadeInterval);
-    if (fade) {
+    if (fade && this.bgmGain && this.ctx) {
+      // GainNode でフェードアウト（iOS対応）
+      const now = this.ctx.currentTime;
+      this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, now);
+      this.bgmGain.gain.linearRampToValueAtTime(0, now + 1.5);
+      this.bgmFadeInterval = setTimeout(() => {
+        this.bgm.pause();
+        this.bgmGain.gain.value = GameAudio.BGM_VOLUME;
+      }, 1600);
+    } else if (fade) {
+      // フォールバック（GainNode なし）
       this.bgmFadeInterval = setInterval(() => {
-        if (this.bgm.volume > 0.05) {
-          this.bgm.volume = Math.max(0, this.bgm.volume - 0.05);
+        if (this.bgm.volume > 0.003) {
+          this.bgm.volume = Math.max(0, this.bgm.volume - 0.003);
         } else {
           this.bgm.pause();
-          this.bgm.volume = 0.4;
+          this.bgm.volume = GameAudio.BGM_VOLUME;
           clearInterval(this.bgmFadeInterval);
         }
       }, 80);
     } else {
       this.bgm.pause();
+      if (this.bgmGain) this.bgmGain.gain.value = GameAudio.BGM_VOLUME;
     }
   }
 
   set muted(val) {
     this._muted = val;
+    if (this.bgmGain) {
+      // GainNode で無音化（iOS対応）
+      this.bgmGain.gain.value = val ? 0 : GameAudio.BGM_VOLUME;
+    }
     if (this.bgm) {
       if (val) {
         this.bgm.pause();
