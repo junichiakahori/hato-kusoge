@@ -57,6 +57,57 @@ class GameAudio {
   constructor() {
     this.ctx = null;
     this.muted = false;
+    this.bgm = null;
+    this.bgmFadeInterval = null;
+  }
+
+  initBGM() {
+    if (this.bgm) return;
+    this.bgm = new Audio('bgm.mp3');
+    this.bgm.loop = true;
+    this.bgm.volume = 0.4;
+  }
+
+  playBGM() {
+    this.initBGM();
+    if (this.muted) return;
+    this.bgm.volume = 0.4;
+    if (this.bgm.paused) {
+      this.bgm.currentTime = 0;
+      this.bgm.play().catch(() => {});
+    }
+  }
+
+  stopBGM(fade = false) {
+    if (!this.bgm) return;
+    if (this.bgmFadeInterval) clearInterval(this.bgmFadeInterval);
+    if (fade) {
+      this.bgmFadeInterval = setInterval(() => {
+        if (this.bgm.volume > 0.05) {
+          this.bgm.volume = Math.max(0, this.bgm.volume - 0.05);
+        } else {
+          this.bgm.pause();
+          this.bgm.volume = 0.4;
+          clearInterval(this.bgmFadeInterval);
+        }
+      }, 80);
+    } else {
+      this.bgm.pause();
+    }
+  }
+
+  set muted(val) {
+    this._muted = val;
+    if (this.bgm) {
+      if (val) {
+        this.bgm.pause();
+      } else if (typeof currentGameState !== 'undefined' && currentGameState === 'playing') {
+        this.bgm.play().catch(() => {});
+      }
+    }
+  }
+  get muted() {
+    return this._muted || false;
   }
 
   init() {
@@ -3049,6 +3100,7 @@ function triggerGameOver() {
   pigeon.perchedOn = null; // Unperch
 
   audio.playGameOver();
+  audio.stopBGM(true); // フェードアウト
 
   // Update total crumbs
   gameData.crumbs += levelCrumbs;
@@ -3285,6 +3337,7 @@ function setupUIEvents() {
 
     currentGameState = STATE.PLAYING;
     resetGamePlay();
+    audio.playBGM();
   });
 
   // Shop navigation
@@ -3313,6 +3366,7 @@ function setupUIEvents() {
     }
     currentGameState = STATE.PLAYING;
     resetGamePlay();
+    audio.playBGM();
   });
 
   // Back to Menu Button
@@ -3321,6 +3375,7 @@ function setupUIEvents() {
     document.getElementById('game-over-screen').classList.add('hidden');
     document.getElementById('title-screen').classList.remove('hidden');
     currentGameState = STATE.MENU;
+    audio.stopBGM();
   });
 
   // Mute Audio Toggle
