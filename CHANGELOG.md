@@ -1,5 +1,11 @@
 # 🕊️ ハトの糞ゲー (PIGEON CRAP GAME) - 変更履歴 (CHANGELOG)
 
+### v1.5.6 (2026/06/11 21:25)
+- **バグ修正**
+  - BGMをWeb Audio APIのGainNode経由からシンプルなHTML Audio要素直接制御に戻し、Chrome含む全ブラウザで確実に再生されるよう修正。
+
+---
+
 ### v1.5.5 (2026/06/11 21:23)
 - **バグ修正**
   - PC Chrome でBGMが鳴らない問題を修正。Web Audio API の `AudioContext` が `suspended` 状態のまま再生しようとしていたため、`resume()` を呼び出してから再生するよう修正。
