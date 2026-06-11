@@ -90,9 +90,19 @@ class GameAudio {
     if (this.muted) return;
     this.connectBGMToWebAudio();
     if (!this.bgmConnected) this.bgm.volume = GameAudio.BGM_VOLUME;
-    if (this.bgm.paused) {
-      this.bgm.currentTime = 0;
-      this.bgm.play().catch(() => {});
+    // AudioContext が suspended の場合は resume してから再生（Chrome対策）
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().then(() => {
+        if (this.bgm.paused) {
+          this.bgm.currentTime = 0;
+          this.bgm.play().catch(() => {});
+        }
+      });
+    } else {
+      if (this.bgm.paused) {
+        this.bgm.currentTime = 0;
+        this.bgm.play().catch(() => {});
+      }
     }
   }
 
