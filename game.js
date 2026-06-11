@@ -65,13 +65,13 @@ class GameAudio {
     if (this.bgm) return;
     this.bgm = new Audio('bgm.mp3');
     this.bgm.loop = true;
-    this.bgm.volume = 0.4;
+    this.bgm.volume = 0.03;
   }
 
   playBGM() {
     this.initBGM();
     if (this.muted) return;
-    this.bgm.volume = 0.4;
+    this.bgm.volume = 0.03;
     if (this.bgm.paused) {
       this.bgm.currentTime = 0;
       this.bgm.play().catch(() => {});
