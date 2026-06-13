@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ハトの糞ゲー プレゼンスライド</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+  <!-- サイバー・ネオン風のダークテーマを適用 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css">
+  <!-- カスタムスタイル（ネオンカラー） -->
+  <style>
+    :root {
+      --r-background-color: #0c0f12;
+      --r-main-font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --r-main-color: #e2e8f0;
+      --r-heading-color: #00ffcc;
+      --r-heading-font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --r-link-color: #3b82f6;
+    }
+    .reveal h1, .reveal h2 {
+      text-transform: none;
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+    }
+    .reveal h2 {
+      color: #ff007f;
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+    }
+    .reveal h3 {
+      color: #3b82f6;
+    }
+    .reveal ul {
+      font-size: 0.9em;
+      line-height: 1.6;
+    }
+    .reveal li {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <!-- スライド 1: 表紙 -->
+      <section data-background-color="#0c0f12">
+        <h1>ハトの糞ゲー 🕊️</h1>
+        <h3>都会を飛び回る、爽快フン爆撃アクション！</h3>
+        <p style="font-size: 0.6em; color: #888; margin-top: 50px;">Developed in collaboration with Google Antigravity</p>
+      </section>
+
+      <!-- スライド 2: 概要 -->
+      <section data-background-color="#0c0f12">
+        <h2>🎮 プロジェクト概要</h2>
+        <ul>
+          <li>「クソゲー」をテーマにした、ユーモラスで爽快なプレイ感を提供するPC・モバイル向けWebアクションゲーム。</li>
+          <li>ハトを操作してエサを食べ、障害物を避けながら地上の人々にフンを落としてハイスコアを目指す！</li>
+          <li>レトロでネオンなアーケード風デザイン。</li>
+        </ul>
+      </section>
+
+      <!-- スライド 3: システム -->
+      <section data-background-color="#0c0f12">
+        <h2>⚡ 主なゲームシステム</h2>
+        <ul>
+          <li><strong>飛行物理 ＆ 着地システム</strong>：羽ばたきの浮遊感を物理シミュレート。電柱や電線に着地してスタミナと弾数を高速回復！</li>
+          <li><strong>フン爆撃ギミック（💩）</strong>：歩行者や車にフンを命中させ、楽しいリアクションと高得点を獲得。</li>
+          <li><strong>ハト・ショップ</strong>：エサを消費してハトを強化。カスタムスキン（ノーマル、ゴールデン、サイバー、シャドウ）をアンロック。</li>
+        </ul>
+      </section>
+
+      <!-- スライド 4: 技術 -->
+      <section data-background-color="#0c0f12">
+        <h2>🛠️ テクノロジースタック</h2>
+        <ul>
+          <li><strong>フロントエンド</strong>：HTML5 Canvas, Vanilla CSS (ネオンテーマ), JavaScript</li>
+          <li><strong>サウンドシステム</strong>：Web Audio APIによるリアルタイムシンセサイザー（外部の音声ファイル不要）</li>
+          <li><strong>ランキング</strong>：Node.js + Express (ローカル) / Supabase (オンライン)</li>
+        </ul>
+      </section>
+
+      <!-- スライド 5: AI共同開発 -->
+      <section data-background-color="#0c0f12">
+        <h2>🤖 AIとの共同開発</h2>
+        <p>Google Antigravity とのペアプログラミングにより高速開発！</p>
+        <ul>
+          <li>Web Audio APIによる動的な効果音生成ロジックの構築</li>
+          <li>ハトの羽ばたき物理演算や衝突判定アルゴリズムの調整</li>
+          <li>CSSによるネオン調ダークテーマのビジュアル最適化</li>
+        </ul>
+      </section>
+
+      <!-- スライド 6: デモ動画 -->
+      <section data-background-color="#0c0f12">
+        <h2>🎥 デモ動画 ＆ リンク</h2>
+        <p style="margin-bottom: 30px;">解説動画 (YouTube):<br><a href="https://youtu.be/e4Hs6hFa9d8" target="_blank">https://youtu.be/e4Hs6hFa9d8</a></p>
+        <p>GitHub リポジトリ:<br><a href="https://github.com/junichiakahori/hato-kusoge" target="_blank">https://github.com/junichiakahori/hato-kusoge</a></p>
+      </section>
+
+      <!-- スライド 7: 終わり -->
+      <section data-background-color="#0c0f12">
+        <h1>ご清聴ありがとうございました！ 🕊️</h1>
+        <h3>Let's Drop Some 💩!</h3>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      transition: 'slide' // slide, fade, convex, concave, zoom
+    });
+  </script>
+</body>
+</html>
