@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
   <!-- サイバー・ネオン風のダークテーマを適用 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css">
-  <!-- カスタムスタイル（ネオンカラー） -->
+  <!-- カスタムスタイル（ネオンカラーと巨大フォント） -->
   <style>
     :root {
       --r-background-color: #0c0f12;
@@ -20,34 +20,70 @@
     }
     .reveal h1, .reveal h2 {
       text-transform: none;
-      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+      text-shadow: 0 0 15px rgba(0, 255, 204, 0.6), 0 0 30px rgba(0, 255, 204, 0.3);
+    }
+    .reveal h1 {
+      font-size: 2.8em !important;
     }
     .reveal h2 {
       color: #ff007f;
-      text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
-      margin-bottom: 40px !important;
+      text-shadow: 0 0 15px rgba(255, 0, 127, 0.6), 0 0 30px rgba(255, 0, 127, 0.3);
+      font-size: 2.2em !important;
+      margin-bottom: 50px !important;
     }
     .reveal h3 {
       color: #3b82f6;
+      font-size: 1.5em !important;
     }
-    /* 日本語の変な折り返しを防ぎ、中央揃えかつリスト内は左揃えにする設定 */
-    .reveal .slide-content {
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: left;
-    }
-    .reveal ul {
-      font-size: 0.85em;
+    .reveal p {
+      font-size: 1.2em;
       line-height: 1.6;
-      display: block;
-      margin-left: 2em;
     }
-    .reveal li {
-      margin-bottom: 20px;
+    .reveal .highlight {
+      color: #00ffcc;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+    }
+    .reveal .accent {
+      color: #ff007f;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+    }
+    
+    /* 背景パーティクル用のCanvasスタイル */
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* LT向け中央寄せコンテンツ幅 */
+    .reveal .slide-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .reveal .slide-content ul {
+      display: inline-block;
+      text-align: left;
+      font-size: 0.95em;
+      line-height: 1.8;
+    }
+    /* リストマーカーをフン（💩）にする遊び心 */
+    .reveal .slide-content li {
+      margin-bottom: 25px;
+      list-style-type: "💩 ";
       word-break: keep-all;
       overflow-wrap: break-word;
     }
-    .reveal li span.desc {
+    .reveal .slide-content li::marker {
+      font-size: 1.2em;
+    }
+    .reveal .slide-content li span.desc {
       display: block;
       font-size: 0.8em;
       color: #94a3b8;
@@ -56,43 +92,49 @@
   </style>
 </head>
 <body>
+  <!-- 背景演出用のCanvas -->
+  <canvas id="particles"></canvas>
+
   <div class="reveal">
     <div class="slides">
       <!-- スライド 1: 表紙 -->
       <section data-background-color="#0c0f12">
-        <h1>ハトの糞ゲー 🕊️</h1>
-        <h3 style="margin-top: 30px;">都会を飛び回る、爽快フン爆撃アクション！</h3>
-        <p style="font-size: 0.55em; color: #64748b; margin-top: 80px;">Developed in collaboration with Google Antigravity</p>
+        <h1 style="font-size: 3.2em !important;">ハトの糞ゲー 🕊️</h1>
+        <h3 style="margin-top: 40px;">都会を飛び回る、爽快フン爆撃アクション！</h3>
+        <p style="font-size: 0.6em; color: #64748b; margin-top: 100px;">Developed in collaboration with Google Antigravity</p>
       </section>
 
       <!-- スライド 2: 概要 -->
       <section data-background-color="#0c0f12">
         <h2>🎮 プロジェクト概要</h2>
         <div class="slide-content">
+          <p style="font-size: 1.5em; margin-bottom: 40px; font-weight: bold;">
+            作ってしまった... <span class="accent">究極のクソゲー！</span>
+          </p>
           <ul>
-            <li>「クソゲー」のテーマにふさわしい、ユーモラスなWebアクションゲーム</li>
-            <li>ハトを操作し、障害物を避けながら地上の人々にフンを落とす！</li>
-            <li>レトロでネオンなアーケード風のビジュアルデザイン</li>
+            <li>ユーモラスで爽快なプレイ感を提供するWebアクション</li>
+            <li>エサを食べ、障害物を避け、地上の人々にフンを落とす！</li>
+            <li>レトロなネオン調のゲームセンター風デザイン</li>
           </ul>
         </div>
       </section>
 
       <!-- スライド 3: システム -->
       <section data-background-color="#0c0f12">
-        <h2>⚡ 主なゲームシステム</h2>
+        <h2>⚡ ユニークなゲームシステム</h2>
         <div class="slide-content">
           <ul>
             <li>
-              <strong>飛行物理 ＆ 着地システム</strong>
-              <span class="desc">羽ばたきの浮遊感や慣性をシミュレート。電線や電柱に着地して高速回復！</span>
+              <strong>飛行物理 ＆ 電線への着地</strong>
+              <span class="desc">羽ばたきの浮遊感や慣性をシミュレート。電柱に着地して高速回復！</span>
             </li>
             <li>
-              <strong>フン爆撃ギミック（💩）</strong>
-              <span class="desc">歩行者や車にフンを命中させ、面白いリアクションと高得点を獲得。</span>
+              <strong>楽しいフン爆撃ギミック</strong>
+              <span class="desc">ターゲットにフンが当たると、面白い叫び声とともに高得点を獲得。</span>
             </li>
             <li>
-              <strong>ハト・ショップ（育成 ＆ カスタマイズ）</strong>
-              <span class="desc">エサで能力を強化。ゴールデンやサイバーなどのユニークなスキンを解放。</span>
+              <strong>ハト・ショップでの育成</strong>
+              <span class="desc">集めたパンでハトを強化。ゴールデンやサイバーなどのスキンも解放！</span>
             </li>
           </ul>
         </div>
@@ -100,62 +142,165 @@
 
       <!-- スライド 4: 技術 -->
       <section data-background-color="#0c0f12">
-        <h2>🛠️ テクノロジースタック</h2>
+        <h2>🛠️ 音声ファイル一切不要！</h2>
         <div class="slide-content">
+          <p style="font-size: 1.4em; margin-bottom: 40px; font-weight: bold;">
+            Web Audio API による <span class="highlight">動的シンセサイザー</span>
+          </p>
           <ul>
-            <li><strong>フロントエンド</strong>：HTML5 Canvas / Vanilla CSS / JavaScript (ES6)</li>
-            <li>
-              <strong>サウンド</strong>：Web Audio API によるリアルタイムシンセサイザー
-              <span class="desc">★ 音声ファイル一切不要！ブラウザ上で動的に効果音やBGMを合成</span>
-            </li>
-            <li><strong>サーバー ＆ データベース</strong>：Node.js + Express / Supabase</li>
+            <li>BGMや効果音（羽ばたき音、ヒット音）はすべてコードで生成</li>
+            <li>外部アセットのロードが無いため、一瞬で超軽量に起動</li>
+            <li>フロントエンドは Canvas とピュアな JavaScript のみで高速動作</li>
           </ul>
         </div>
       </section>
 
       <!-- スライド 5: AI共同開発 -->
       <section data-background-color="#0c0f12">
-        <h2>🤖 AIとの共同開発</h2>
+        <h2>🤖 AIとの爆速共同開発</h2>
         <div class="slide-content">
-          <p style="font-size: 0.8em; color: #3b82f6; margin-bottom: 25px; font-weight: bold;">Google Antigravity とのペアプログラミングによる高速開発</p>
+          <p style="font-size: 1.3em; color: #3b82f6; margin-bottom: 35px; font-weight: bold;">Google Antigravity とのペアプログラミング</p>
           <ul>
-            <li><strong>効果音合成アルゴリズム</strong>：Web Audio APIでの動的な効果音・BGMのコード生成</li>
-            <li><strong>ゲーム物理の調整</strong>：慣性を伴う飛行挙動や、電柱への着地当たり判定の最適化</li>
-            <li><strong>ビジュアル ＆ UI</strong>：ネオン調ダークテーマCSSとレスポンス画面調整</li>
+            <li><strong>音響エンジニアリング</strong>：シンセサイザーの合成ロジック構築</li>
+            <li><strong>ゲーム物理</strong>：慣性のある羽ばたき挙動、着地判定アルゴリズム</li>
+            <li><strong>デザイン最適化</strong>：ネオン調ダークテーマのビジュアル調整</li>
           </ul>
         </div>
       </section>
 
       <!-- スライド 6: デモ動画 -->
       <section data-background-color="#0c0f12">
-        <h2>🎥 デモ動画 ＆ リンク</h2>
-        <div class="slide-content" style="text-align: center; margin-top: 50px;">
-          <p style="font-size: 0.9em; margin-bottom: 30px;">
+        <h2>🎥 デモ動画 ＆ コード</h2>
+        <div class="slide-content" style="margin-top: 50px;">
+          <p style="font-size: 1.2em; margin-bottom: 40px;">
             🎬 <strong>実機プレイ解説動画 (YouTube)</strong><br>
-            <a href="https://youtu.be/e4Hs6hFa9d8" target="_blank" style="font-size: 0.85em;">https://youtu.be/e4Hs6hFa9d8</a>
+            <a href="https://youtu.be/e4Hs6hFa9d8" target="_blank" class="highlight">https://youtu.be/e4Hs6hFa9d8</a>
           </p>
-          <p style="font-size: 0.9em;">
-            💻 <strong>GitHub リポジトリ</strong><br>
-            <a href="https://github.com/junichiakahori/hato-kusoge" target="_blank" style="font-size: 0.85em;">https://github.com/junichiakahori/hato-kusoge</a>
+          <p style="font-size: 1.2em;">
+            💻 <strong>GitHub オープンソース</strong><br>
+            <a href="https://github.com/junichiakahori/hato-kusoge" target="_blank" class="accent">https://github.com/junichiakahori/hato-kusoge</a>
           </p>
         </div>
       </section>
 
       <!-- スライド 7: 終わり -->
       <section data-background-color="#0c0f12">
-        <h1>ご清聴ありがとうございました！ 🕊️</h1>
-        <h3 style="margin-top: 40px; color: #ff007f; text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);">Let's Drop Some 💩!</h3>
+        <h1 style="font-size: 3.5em !important; color: #00ffcc; text-shadow: 0 0 20px rgba(0, 255, 204, 0.8);">ご清聴ありがとうございました！ 🕊️</h1>
+        <h3 style="margin-top: 50px; font-size: 2.2em !important; color: #ff007f; text-shadow: 0 0 20px rgba(255, 0, 127, 0.8);">Let's Drop Some 💩!</h3>
       </section>
     </div>
   </div>
 
+  <!-- Reveal.js のコアライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.js"></script>
   <script>
+    // Reveal.js の初期化設定（LT用に3D回転エフェクトを有効化）
     Reveal.initialize({
       hash: true,
       slideNumber: true,
-      transition: 'slide' // slide, fade, convex, concave, zoom
+      transition: 'convex', // 立体的な3D回転でスライドを切り替え (slide, fade, convex, zoom)
+      backgroundTransition: 'fade'
     });
+
+    // --- 背景パーティクル ＆ キャラクターアニメーション ---
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const items = [];
+    const emojis = ['💩', '🕊️', '🍞'];
+
+    // 背景の微細な浮遊ネオンドット
+    for (let i = 0; i < 35; i++) {
+      items.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 1,
+        color: Math.random() > 0.5 ? '#00ffcc' : '#ff007f',
+        speedX: (Math.random() - 0.5) * 0.4,
+        speedY: (Math.random() - 0.5) * 0.4,
+        type: 'dot'
+      });
+    }
+
+    // ふわふわ降ってくる絵文字オブジェクト
+    function spawnEmoji() {
+      items.push({
+        x: Math.random() * width,
+        y: -60,
+        size: Math.random() * 25 + 20,
+        speedX: (Math.random() - 0.5) * 0.8,
+        speedY: Math.random() * 1.2 + 0.6,
+        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.03,
+        type: 'emoji'
+      });
+    }
+
+    // 定期的に絵文字を生成（画面上の最大数を制御）
+    setInterval(() => {
+      const currentEmojis = items.filter(i => i.type === 'emoji').length;
+      if (currentEmojis < 6) {
+        spawnEmoji();
+      }
+    }, 3500);
+
+    // 描画ループ
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      
+      // 暗めのネオンの余韻（わずかに半透明ブラックでクリアしても良いですが、今回はすっきり消去）
+      items.forEach((item, index) => {
+        if (item.type === 'dot') {
+          // ドットの描画（ネオン調に少しぼかす）
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = item.color;
+          ctx.fillStyle = item.color;
+          ctx.beginPath();
+          ctx.arc(item.x, item.y, item.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0; // リセット
+          
+          item.x += item.speedX;
+          item.y += item.speedY;
+          
+          if (item.x < 0) item.x = width;
+          if (item.x > width) item.x = 0;
+          if (item.y < 0) item.y = height;
+          if (item.y > height) item.y = 0;
+        } else if (item.type === 'emoji') {
+          // 回転する絵文字
+          ctx.save();
+          ctx.translate(item.x, item.y);
+          ctx.rotate(item.angle);
+          ctx.font = `${item.size}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(item.emoji, 0, 0);
+          ctx.restore();
+          
+          item.x += item.speedX;
+          item.y += item.speedY;
+          item.angle += item.spin;
+          
+          // 画面外に落ちたら配列から削除
+          if (item.y > height + 60 || item.x < -60 || item.x > width + 60) {
+            items.splice(index, 1);
+          }
+        }
+      });
+      requestAnimationFrame(animate);
+    }
+    
+    // アニメーション開始
+    animate();
   </script>
 </body>
 </html>
