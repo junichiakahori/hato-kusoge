@@ -4,7 +4,7 @@
 
 「クソゲー」のテーマにふさわしく、ユーモラスで爽快なプレイ感を提供します。
 
-[![ハトの糞ゲー解説動画](og-image.png)](https://youtu.be/e4Hs6hFa9d8)
+<a href="https://youtu.be/e4Hs6hFa9d8"><img src="og-image.png" alt="ハトの糞ゲー解説動画" width="480"></a>
 
 ---
 
