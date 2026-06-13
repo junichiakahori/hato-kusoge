@@ -77,8 +77,6 @@
     .reveal .slide-content li {
       margin-bottom: 18px;
       list-style-type: "💩 ";
-      word-break: keep-all;
-      overflow-wrap: break-word;
     }
     .reveal .slide-content li::marker {
       font-size: 1.1em;
@@ -88,6 +86,11 @@
       font-size: 0.8em;
       color: #94a3b8;
       margin-top: 5px;
+    }
+    
+    /* レスポンシブで不自然な改行を防ぐインラインブロック */
+    .ib {
+      display: inline-block;
     }
   </style>
 </head>
@@ -99,8 +102,13 @@
     <div class="slides">
       <!-- スライド 1: 表紙 -->
       <section data-background-color="#0c0f12">
-        <h1 style="font-size: 2.6em !important;">ハトの糞ゲー 🕊️</h1>
-        <h3 style="margin-top: 30px;">都会を飛び回る、爽快フン爆撃アクション！</h3>
+        <h1 style="font-size: 2.6em !important;">
+          <span class="ib">ハトの糞ゲー 🕊️</span>
+        </h1>
+        <h3 style="margin-top: 30px;">
+          <span class="ib">都会を飛び回る、</span>
+          <span class="ib">爽快フン爆撃アクション！</span>
+        </h3>
         <p style="font-size: 0.6em; color: #64748b; margin-top: 80px;">Developed in collaboration with Google Antigravity</p>
       </section>
 
@@ -109,12 +117,23 @@
         <h2>🎮 プロジェクト概要</h2>
         <div class="slide-content">
           <p style="font-size: 1.3em; margin-bottom: 30px; font-weight: bold;">
-            作ってしまった... <span class="accent">究極のクソゲー！</span>
+            <span class="ib">作ってしまった...</span>
+            <span class="accent ib">究極のクソゲー！</span>
           </p>
           <ul>
-            <li>ユーモラスで爽快なプレイ感を提供するWebアクション</li>
-            <li>エサを食べ、障害物を避け、地上の人々にフンを落とす！</li>
-            <li>レトロなネオン調のゲームセンター風デザイン</li>
+            <li>
+              <span class="ib">「クソゲー」をテーマにした、</span>
+              <span class="ib">ユーモラスなWebアクション</span>
+            </li>
+            <li>
+              <span class="ib">エサを食べ、</span>
+              <span class="ib">障害物を避けて</span>
+              <span class="ib">地上の人々にフンを落とす！</span>
+            </li>
+            <li>
+              <span class="ib">レトロでネオンな</span>
+              <span class="ib">ゲームセンター風デザイン</span>
+            </li>
           </ul>
         </div>
       </section>
@@ -126,15 +145,24 @@
           <ul>
             <li>
               <strong>飛行物理 ＆ 電線への着地</strong>
-              <span class="desc">羽ばたきの浮遊感や慣性をシミュレート。電柱に着地して高速回復！</span>
+              <span class="desc">
+                <span class="ib">・羽ばたき時の浮遊感や慣性を物理シミュレート</span><br>
+                <span class="ib">・電柱や電線に着地して、スタミナを高速回復！</span>
+              </span>
             </li>
             <li>
               <strong>楽しいフン爆撃ギミック</strong>
-              <span class="desc">ターゲットにフンが当たると、面白い叫び声とともに高得点を獲得。</span>
+              <span class="desc">
+                <span class="ib">・歩行者や車にフンを命中させ、</span>
+                <span class="ib">楽しい悲鳴と高得点を獲得。</span>
+              </span>
             </li>
             <li>
               <strong>ハト・ショップでの育成</strong>
-              <span class="desc">集めたパンでハトを強化。ゴールデンやサイバーなどのスキンも解放！</span>
+              <span class="desc">
+                <span class="ib">・集めたパンでハトのスタミナやスピードを強化</span><br>
+                <span class="ib">・ゴールデンやサイバーなどのカスタムスキンを解放！</span>
+              </span>
             </li>
           </ul>
         </div>
@@ -145,12 +173,22 @@
         <h2>🛠️ 音声ファイル一切不要！</h2>
         <div class="slide-content">
           <p style="font-size: 1.25em; margin-bottom: 30px; font-weight: bold;">
-            Web Audio API による <span class="highlight">動的シンセサイザー</span>
+            <span class="ib">Web Audio API による</span>
+            <span class="highlight ib">動的シンセサイザー</span>
           </p>
           <ul>
-            <li>BGMや効果音（羽ばたき音、ヒット音）はすべてコードで生成</li>
-            <li>外部アセットのロードが無いため、一瞬で超軽量に起動</li>
-            <li>フロントエンドは Canvas とピュアな JavaScript のみで高速動作</li>
+            <li>
+              <span class="ib">BGMや効果音（羽ばたき、ヒット音）は</span>
+              <span class="ib">すべてコードで生成</span>
+            </li>
+            <li>
+              <span class="ib">音声アセットの読み込みが無いため、</span>
+              <span class="ib">一瞬で超軽量に起動</span>
+            </li>
+            <li>
+              <span class="ib">HTML5 Canvas と</span>
+              <span class="ib">JavaScript のみで高速・滑らかに動作</span>
+            </li>
           </ul>
         </div>
       </section>
@@ -159,11 +197,29 @@
       <section data-background-color="#0c0f12">
         <h2>🤖 AIとの爆速共同開発</h2>
         <div class="slide-content">
-          <p style="font-size: 1.2em; color: #3b82f6; margin-bottom: 25px; font-weight: bold;">Google Antigravity とのペアプログラミング</p>
+          <p style="font-size: 1.25em; color: #3b82f6; margin-bottom: 25px; font-weight: bold;">
+            <span class="ib">Google Antigravity との</span>
+            <span class="ib">ペアプログラミング</span>
+          </p>
           <ul>
-            <li><strong>音響エンジニアリング</strong>：シンセサイザーの合成ロジック構築</li>
-            <li><strong>ゲーム物理</strong>：慣性のある羽ばたき挙動、着地判定アルゴリズム</li>
-            <li><strong>デザイン最適化</strong>：ネオン調ダークテーマのビジュアル調整</li>
+            <li>
+              <strong>音響エンジニアリング</strong>
+              <span class="desc">
+                <span class="ib">Web Audio APIでの効果音・BGMのコード生成</span>
+              </span>
+            </li>
+            <li>
+              <strong>ゲーム物理の調整</strong>
+              <span class="desc">
+                <span class="ib">慣性のある飛行挙動や、電柱への当たり判定の最適化</span>
+              </span>
+            </li>
+            <li>
+              <strong>デザイン最適化</strong>
+              <span class="desc">
+                <span class="ib">ネオン調ダークテーマCSSとレスポンス画面調整</span>
+              </span>
+            </li>
           </ul>
         </div>
       </section>
@@ -185,8 +241,12 @@
 
       <!-- スライド 7: 終わり -->
       <section data-background-color="#0c0f12">
-        <h1 style="font-size: 3.0em !important; color: #00ffcc; text-shadow: 0 0 20px rgba(0, 255, 204, 0.8);">ご清聴ありがとうございました！ 🕊️</h1>
-        <h3 style="margin-top: 40px; font-size: 1.8em !important; color: #ff007f; text-shadow: 0 0 20px rgba(255, 0, 127, 0.8);">Let's Drop Some 💩!</h3>
+        <h1 style="font-size: 3.0em !important; color: #00ffcc; text-shadow: 0 0 20px rgba(0, 255, 204, 0.8);">
+          <span class="ib">ご清聴ありがとうございました！ 🕊️</span>
+        </h1>
+        <h3 style="margin-top: 40px; font-size: 1.8em !important; color: #ff007f; text-shadow: 0 0 20px rgba(255, 0, 127, 0.8);">
+          <span class="ib">Let's Drop Some 💩!</span>
+        </h3>
       </section>
     </div>
   </div>
@@ -202,8 +262,8 @@
       backgroundTransition: 'fade',
       width: 1050,           // スライドの基準幅を広めに設定
       height: 700,           // スライドの基準高さ
-      margin: 0.05,          // 外側の最小マージン（小さくして表示エリアを確保）
-      minScale: 0.2,         // 画面が極端に小さくなった時の縮小下限
+      margin: 0.05,          // 外側の最小マージン
+      minScale: 0.2,         // 画面が極端に小さいときの縮小下限
       maxScale: 2.0          // 最大拡大率
     });
 
@@ -249,7 +309,7 @@
       });
     }
 
-    // 定期的に絵文字を生成（画面上の最大数を制御）
+    // 定期的に絵文字を生成
     setInterval(() => {
       const currentEmojis = items.filter(i => i.type === 'emoji').length;
       if (currentEmojis < 6) {
