@@ -10,20 +10,8 @@
 <a href="https://youtu.be/e4Hs6hFa9d8"><img src="og-image.png" alt="ハトの糞ゲー解説動画" width="480"></a>
 
 ### 📄 プレゼンスライド
-ゲームの概要、テクノロジースタック、AI共同開発についての紹介スライドです。
-
-<details>
-<summary> 🎥 ここをクリックしてプレゼンスライド（全7枚）を展開 </summary>
-
-![スライド1](slides/slide_0.png)
-![スライド2](slides/slide_1.png)
-![スライド3](slides/slide_2.png)
-![スライド4](slides/slide_3.png)
-![スライド5](slides/slide_4.png)
-![スライド6](slides/slide_5.png)
-![スライド7](slides/slide_6.png)
-
-</details>
+発表用スライドショーとして [slide.html](slide.html) がリポジトリ内にあります。
+PCのブラウザで直接開くことで、キーボードの矢印キーでめくって閲覧できます（Fキーで全画面表示になります）。
 
 ---
 
