@@ -9,6 +9,11 @@
 
 <a href="https://youtu.be/e4Hs6hFa9d8"><img src="og-image.png" alt="ハトの糞ゲー解説動画" width="480"></a>
 
+### 📄 プレゼンスライド
+ゲームの概要、テクノロジースタック、AI共同開発についての紹介スライドです。
+
+* 👉 [プレゼンスライド（GitHub上で見る）](slide.md)
+
 ---
 
 ## 🎮 ゲームの特徴
