@@ -12,7 +12,7 @@
 ### 📄 プレゼンスライド
 発表用スライドショーとして [slide.html](slide.html) がリポジトリ内にあります。
 
-* 🌐 [ブラウザでスライドショーを直接動かして見る](https://htmlpreview.github.io/?https://github.com/junichiakahori/hato-kusoge/blob/main/slide.html)
+* 🌐 [ブラウザでスライドショーを直接動かして見る (GitHub Pages)](https://junichiakahori.github.io/hato-kusoge/slide.html) ※GitHub Pagesの有効化が必要です。
 * 💻 ローカルで見る場合は、ファイルを直接ブラウザで開くことで、キーボードの矢印キーでめくって閲覧できます（Fキーで全画面表示になります）。
 
 ---
