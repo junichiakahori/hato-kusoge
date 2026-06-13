@@ -12,7 +12,20 @@
 ### 📄 プレゼンスライド
 ゲームの概要、テクノロジースタック、AI共同開発についての紹介スライドです。
 
-* 🖥️ [プレゼンスライド (GitHub上でパワーポイントのように見る)](slide.pdf)
+<details>
+<summary> 🎥 ここをクリックしてプレゼンスライド（全7枚）を展開 </summary>
+
+![スライド1](slides/slide_0.png)
+![スライド2](slides/slide_1.png)
+![スライド3](slides/slide_2.png)
+![スライド4](slides/slide_3.png)
+![スライド5](slides/slide_4.png)
+![スライド6](slides/slide_5.png)
+![スライド7](slides/slide_6.png)
+
+</details>
+
+* 🖥️ [プレゼンスライド (PDF形式で見る)](slide.pdf)
 * 📝 [プレゼンスライド (Markdownソースで見る)](slide.md)
 * 💻 ローカルで見る場合は、リポジトリ内の `slide.html` をブラウザで直接開くことで、矢印キーで紙芝居のようにめくって閲覧できます。
 
